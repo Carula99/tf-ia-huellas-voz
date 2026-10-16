@@ -1,0 +1,29 @@
+# Dependencias directas con versiones fijadas (Python 3.12 en Windows).
+# Instalación: ver README.md.
+
+# Cálculo numérico (algoritmos propios de src/core_ml)
+numpy==2.5.4
+scipy==1.18.1
+
+# Imágenes (huellas)
+opencv-python==5.0.0.93
+scikit-image==0.26.0
+
+# Audio (voz)
+librosa==1.0.0
+soundfile==0.14.0
+sounddevice==0.5.6
+edge-tts==7.3.1
+
+# Interfaz y gráficos
+customtkinter==6.0.0
+matplotlib==3.11.2
+
+# Persistencia y configuración
+joblib==1.6.0
+PyYAML==6.0.3
+
+# Tests (scikit-learn solo como oráculo) y notebooks
+scikit-learn==1.9.1
+pytest==9.1.1
+ipykernel==7.4.0

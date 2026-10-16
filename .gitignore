@@ -1,0 +1,23 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Python y pytest
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datos y modelos: se regeneran con los scripts y las semillas de config.yaml.
+# Las carpetas quedan en el repo gracias a su .gitkeep.
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
+
+# Archivos del sistema
+Thumbs.db
+desktop.ini
+.DS_Store
