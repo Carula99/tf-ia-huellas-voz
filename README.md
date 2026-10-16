@@ -11,7 +11,7 @@ Estado: Fase 0 (setup) · tag `v0.0-setup`.
 Requisitos: Windows 10 u 11, [Python 3.12](https://www.python.org/downloads/) y Git.
 
 ```powershell
-git clone <url-del-repo> tf-ia-huellas-voz
+git clone https://github.com/Carula99/tf-ia-huellas-voz.git
 cd tf-ia-huellas-voz
 py -3.12 -m venv venv
 venv\Scripts\python -m pip install --upgrade pip
