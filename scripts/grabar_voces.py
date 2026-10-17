@@ -34,7 +34,7 @@ COMANDOS = ["reconocer", "identificar", "salir"]
 ESTILOS = [  # (estilo, distancia en cm, indicación) -> una toma de cada comando por estilo
     ("normal", 50, "normal, como hablás siempre, a unos 50 cm"),
     ("normal", 50, "normal otra vez, a unos 50 cm"),
-    ("lento", 50, "lento y bien pronunciado, como si probaras el sistema"),
+    ("lento", 50, "lento: estirá la palabra hasta casi el doble, y arrancá apenas aparece GRABANDO"),
     ("rapido", 50, "un poco más rápido"),
     ("lejos", 80, "desde unos 80 cm, con voz firme"),
     ("cerca", 30, "más cerca, a unos 30 cm, con voz normal"),
@@ -90,7 +90,11 @@ def revisar(y: np.ndarray, fs: int) -> list[str]:
         tope = rms.max() + 1e-12
         if rms[:borde].max() > 0.35 * tope:
             avisos.append("empezó demasiado pronto: puede estar cortada al inicio")
-        if rms[-borde:].max() > 0.35 * tope:
+        # El final es más estricto que el inicio: la palabra se apaga de a poco y con 0.35 no se detectaba
+        # una toma real de p01 que terminó a 0,06 s del borde (0.18 del máximo). En silencio el filtro de
+        # Windows deja ~0, así que 0.10 no da falsas alarmas; el inicio queda en 0.35 porque ahí el micrófono
+        # deja pasar un ruidito al arrancar (hasta 0.08 del máximo en p01).
+        if rms[-borde:].max() > 0.10 * tope:
             avisos.append("terminó demasiado tarde: puede estar cortada al final")
     return avisos
 
