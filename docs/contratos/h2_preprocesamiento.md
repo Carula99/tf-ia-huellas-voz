@@ -1,7 +1,9 @@
 
 # Contrato · H2 · Preprocesamiento de huellas
 
-**Versión 1 · 22/10/2026.** Es lo que verifica `tests/test_h2.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml` y `src/config.cargar_config`) y de H1 (convenciones de la sección 0, `generar_base`, `sortear_parametros`, `aplicar_variante` y la receta de la sección 4). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
+**Versión 1.1 · 22/10/2026** (la 1 es del mismo día). **Cambio en la 1.1:** se suman a la sección 7 las respuestas a las preguntas del chat que escribe los tests, lecturas del contrato que confirmó Santiago. Ningún criterio cambia de umbral. Se anota en el Documento 2 junto con los tests.
+
+Es lo que verifica `tests/test_h2.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml` y `src/config.cargar_config`) y de H1 (convenciones de la sección 0, `generar_base`, `sortear_parametros`, `aplicar_variante` y la receta de la sección 4). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
 **Cambios respecto del plan v0.3.2** (medidos con un prototipo sobre las 300 imágenes del dataset de `v0.1.2-huellas-datos`; quedan en el Documento 2):
 
@@ -171,3 +173,19 @@ Los criterios 5.4 a 5.6 se miden sobre la **muestra**: las entradas de `plan_dat
 - Las singularidades se comparan por cercanía, sin exigir orden.
 - "Fondo" es 245, el gris de fondo de H1.
 - **Recortes de 5.2:** el origen es `(round(x_r) − ancho_recorte // 2, round(y_r) − alto_recorte // 2)`, corrido lo necesario para que el recorte entre en la imagen de 400 × 320 (con las bases del dataset entra sin correrlo). El punto de referencia esperado es el de la base menos ese origen.
+
+### Sumadas en la versión 1.1 (respuestas al chat de tests)
+
+- **Punto de referencia de una base** (5.2 y 5.9): el que da `preprocesar(base.imagen)`, con su `angulo`, para las 4 bases, también la del arco (`HuellaBase` no tiene punto de referencia y el arco no tiene núcleo). El lienzo de 500 × 420 tiene que dar ese punto + (50, 50), los recortes se centran en ese punto (es el `(x_r, y_r)` de los recortes) y en 5.9 ese punto se lleva con la fórmula afín de H1.
+- **Base de arco de 5.2:** la del intruso 4 (`arco`, semilla 10004), que también está en la muestra.
+- **Zona de comparación (5.6):** al erosionar, lo que está fuera de la ventana cuenta como fuera de la máscara (`scipy.ndimage.binary_erosion(..., structure=np.ones((9, 9), bool), border_value=0)`), así que la zona queda a ≥ 4 px del borde de la ventana.
+- **"En al menos el 95 %"** es la proporción ≥ 0,95. En los 9 arcos de la muestra no puede fallar ninguno (ni en el método ni en el ángulo ≤ 5°); en los 45 de 5.9, a lo sumo 2.
+- **5.6:** el esqueleto y el realce se exigen en cada una de las 156 variantes, igual que el campo y las crestas. El período se mide sobre `realzada` tal cual: el 255 de fuera de la máscara entra en el recorte de 192 × 192.
+- **5.9:** se recalculan sobre las 300 imágenes todos los criterios de 5.4 y 5.5: el método por tipo, el punto de referencia (≤ 8 px en el 95 % y ≤ 16 px en todas), los núcleos, los 45 arcos y las 15 bases de arco con `"curvatura"`, el ángulo por tipo (≤ 5° en el 95 % y ≤ 10° en todas), las 91 variantes con corte juntas y el ángulo de las 3 bases de las identidades. A eso se suman el arco a ≤ 30 px en el 80 % y el tiempo. Pueden ser varios tests con `@pytest.mark.aceptacion` que comparten un solo fixture del dataset en memoria.
+- **Sección 1**, como en H1 1.1: los `<float …>` exigen `float` de Python (`8` no sirve, `8.0` sí); los enteros, `int` que no sea `bool`; `ventana_px` y `periodo_crestas_px` se comparan por tipo y valor (`[250, 250]` y `[8, 10]`, enteros); si falta la sección `huellas.preprocesamiento` entera, el `ValueError` nombra sus 9 claves.
+- **Formato (5.2):** `HuellaPreprocesada` es una dataclass con exactamente los campos de la sección 2, y `METODOS == ("nucleo", "nucleos", "curvatura")`. `punto_referencia` es una tupla de 2 `float` (`np.float64` sirve) y `nucleos`, una tupla de pares. "No vacías": `binaria`, `esqueleto` y `mascara` tienen algún `True`. Determinismo: los arrays se comparan con `np.array_equal`, y `punto_referencia`, `nucleos`, `angulo` y `metodo` con `==`.
+- **Entradas con `ValueError` (5.2):** las uniformes son de 400 × 320; la `float64`, la de 1 dimensión (`ravel`), la de 4 dimensiones (`(1, 400, 320, 1)`) y la de 2 canales salen de la base; la de 50 × 300 es un recorte de la base (50 filas y 300 columnas).
+- **Diferencia de ángulo** entre dos salidas de `preprocesar`: en grados, llevada a `[−90, 90)`.
+- **5.3** se mide sobre las 156 variantes, sin las bases.
+- **5.7:** la orientación y la máscara de la base son las de `preprocesar(base.imagen)`; el disco es `(x − 124,5)² + (y − 124,5)² ≤ 80²`, y el punto real es `variante.punto_referencia`.
+- **5.8:** `generar_lamina` se llama con el `cfg` real y `salida = tmp_path / "lamina_h2.png"`, y la ruta que devuelve es ese mismo archivo (`Path(resultado).resolve() == salida.resolve()`).
