@@ -1,6 +1,6 @@
 # Contrato · H1 · Generador de huellas y dataset
 
-**Versión 1.1 · 22/10/2026** (la 1 es del 16/10/2026). **Cambios en la 1.1:** se suman las aclaraciones de cómo leen el contrato los tests (sección 7) y tres criterios en 5.4, 5.5 y 5.7, marcados con *(1.1)*. Los pidió el chat que escribió los tests y el cambio está anotado en el Documento 2.
+**Versión 1.2 · 22/10/2026** (la 1 es del 16/10/2026 y la 1.1, del 22/10/2026). **Cambio en la 1.2:** el corte de las variantes es como mucho del 10 % del área, porque lo pidió el profesor el 22/10: `corte_periferico` pasa de `[0.15, 0.20]` a `[0.05, 0.10]` (contrato de la Fase 0, versión 1.1), y el criterio de 5.5 sobre las fracciones del test de corte nombra los extremos de `corte_periferico` en lugar de 0,15 y 0,20. Está anotado en el Documento 2. **Cambios en la 1.1:** se suman las aclaraciones de cómo leen el contrato los tests (sección 7) y tres criterios en 5.4, 5.5 y 5.7, marcados con *(1.1)*. Los pidió el chat que escribió los tests y el cambio está anotado en el Documento 2.
 
 Es lo que verifica `tests/test_h1.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en el contrato de la Fase 0 (`config.yaml` y `src/config.cargar_config`). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
@@ -220,7 +220,7 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
 - Con parámetros completos, elástica incluida: evaluando `mapa_x` y `mapa_y` (interpolación bilineal) en cada posición real de la variante que quede a ≥ 10 px de los bordes, se vuelve a su posición en la base con un error ≤ 0,5 px. Es lo que detecta un desplazamiento elástico aplicado al revés.
 - `punto_referencia`: el núcleo si hay uno, el punto medio si hay dos y `None` en el arco.
 - Corte: con los mismos parámetros y la misma semilla de `rng`, la fracción de la máscara que se pierde al pasar de `corte_fraccion = 0` a `corte_fraccion = f` está en `f ± 0,02`, y el disco de 20 px de radio alrededor de cada núcleo queda entero dentro de la máscara con corte.
-- *(1.1)* Lado del corte: 0° quita la derecha y 90° la parte de abajo. Lo quitado es un semiplano del lado del ángulo guardado, y ese ángulo es el pedido más un múltiplo de 30°. El test de corte usa también `f = 0,40` (además de 0,15 y 0,20), porque con esas dos fracciones la regla de los 30 px nunca entra en juego.
+- *(1.1)* Lado del corte: 0° quita la derecha y 90° la parte de abajo. Lo quitado es un semiplano del lado del ángulo guardado, y ese ángulo es el pedido más un múltiplo de 30°. El test de corte usa también `f = 0,40` (además de los extremos de `corte_periferico`), porque con esas fracciones la regla de los 30 px nunca entra en juego.
 - Presión (el resto como en `SIN_CAMBIOS`): la fracción de píxeles de la máscara por debajo de 128 crece con la presión. Con `+presion_max` es al menos 0,05 mayor que con 0, y con `−presion_max`, al menos 0,05 menor.
 - Ruido (el resto como en `SIN_CAMBIOS`): con `ruido_sigma = 10`, el desvío de la diferencia con la base dentro de la máscara está entre 7 y 13. Con `sal_pimienta = 0,02`, la fracción de píxeles en 0 o 255 que no lo estaban en la base está entre 0,01 y 0,03.
 - Determinismo: la misma base, los mismos parámetros y un `rng` con la misma semilla dan una `imagen` idéntica.

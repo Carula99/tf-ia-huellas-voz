@@ -49,7 +49,7 @@ huellas:
     rotacion_max_grados: 15
     traslacion_max_px: 15
     escala_max: 0.08
-    corte_periferico: [0.15, 0.20]   # fracción del área, sin tocar el núcleo
+    corte_periferico: [0.05, 0.10]   # hasta el 10 % (pedido del profesor); fracción del área, sin tocar el núcleo
     prob_corte: 0.3         # probabilidad de que una variante tenga corte periférico
     elastica_max_px: 3.0    # amplitud máxima de la deformación elástica
     presion_max: 0.7        # mezcla máxima con la erosión (+) o con la dilatación (−)

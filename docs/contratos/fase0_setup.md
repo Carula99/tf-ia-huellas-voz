@@ -1,6 +1,8 @@
 # Contrato · Fase 0 · Setup del proyecto
 
-**Versión 1 · 16/10/2026.** Es lo que verifica `tests/test_setup.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
+**Versión 1.1 · 22/10/2026** (la 1 es del 16/10/2026). **Cambio en la 1.1:** `huellas.variantes.corte_periferico` pasa de `[0.15, 0.20]` a `[0.05, 0.10]`, porque el profesor pidió el 22/10 que a cada huella se le saque como mucho el 10 % de su área. En `tests/test_setup.py` cambia solo ese valor; el cambio está anotado en el Documento 2.
+
+Es lo que verifica `tests/test_setup.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
 **Raíz del repo:** la carpeta que contiene `config.yaml`. En los tests: `RAIZ = Path(__file__).resolve().parents[1]`.
 
@@ -80,7 +82,7 @@ huellas:
     rotacion_max_grados: 15          # fijo
     traslacion_max_px: 15            # fijo
     escala_max: 0.08                 # fijo
-    corte_periferico: [0.15, 0.20]   # fijo
+    corte_periferico: [0.05, 0.10]   # fijo (1.1; antes [0.15, 0.20])
   ventana_px: [250, 250]             # fijo
   periodo_crestas_px: [8, 10]        # fijo
   kmeans:

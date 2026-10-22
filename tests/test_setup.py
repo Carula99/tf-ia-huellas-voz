@@ -773,7 +773,7 @@ VALORES_FIJOS = {
     "huellas.variantes.rotacion_max_grados": 15,
     "huellas.variantes.traslacion_max_px": 15,
     "huellas.variantes.escala_max": 0.08,
-    "huellas.variantes.corte_periferico": [0.15, 0.20],
+    "huellas.variantes.corte_periferico": [0.05, 0.10],  # contrato 1.1 (antes [0.15, 0.20])
     "huellas.ventana_px": [250, 250],
     "huellas.periodo_crestas_px": [8, 10],
     "huellas.kmeans.k": 3,
