@@ -8,7 +8,10 @@ base, que sale entera de su semilla:
 3. máscara elíptica suave;
 4. crestas sintetizadas con filtrado de Gabor iterativo desde ruido, como en SFinGe: cada
    pasada filtra con el banco de Gabor y en cada píxel se queda con la respuesta del filtro
-   de su orientación, así el ruido se va ordenando en crestas paralelas al campo.
+   de su orientación, así el ruido se va ordenando en crestas paralelas al campo;
+5. realce: se empareja el contraste local (donde dos crestas se juntan, los filtros se
+   cancelan en parte y quedaban manchas grises) y una curva tanh define el borde de cada
+   cresta, para que la imagen se parezca más a una captura que a una onda suave.
 
 La misma semilla da exactamente la misma base (todos los sorteos salen de un único
 np.random.Generator con esa semilla).
@@ -33,6 +36,10 @@ GRIS_MEDIO, CONTRASTE = 128.0, 100.0
 
 BORDE_SUAVE_PX = 3.0
 """Ancho (escala de la logística) del borde suave de la máscara, en píxeles."""
+
+NITIDEZ = 2.0
+"""Pendiente K de la curva tanh(K·c)/tanh(K) del realce: con 2 el borde de la cresta ocupa
+alrededor de 1,5 px; con más, los bordes diagonales se ven escalonados."""
 
 
 @dataclass(frozen=True)
@@ -210,6 +217,19 @@ def _sintetizar_crestas(orientacion: np.ndarray, dentro: np.ndarray, periodo: fl
     return crestas
 
 
+def _realzar(crestas: np.ndarray, dentro: np.ndarray, periodo: float) -> np.ndarray:
+    """Contraste local parejo y bordes de cresta definidos, en [−1, 1].
+
+    Se divide por la amplitud local (√2 · RMS en un entorno de unos 0,75 períodos, con un piso
+    para no amplificar zonas casi vacías) y se aplica tanh(K·c)/tanh(K), con K = NITIDEZ.
+    """
+    crestas = crestas.astype(np.float64)
+    amplitud = np.sqrt(cv2.GaussianBlur(crestas * crestas, (0, 0), 0.75 * periodo))
+    piso = 0.25 * float(np.median(amplitud[dentro])) + 1e-9
+    normalizadas = crestas / (np.sqrt(2.0) * np.maximum(amplitud, piso))
+    return np.tanh(NITIDEZ * normalizadas) / np.tanh(NITIDEZ)
+
+
 # --------------------------------------------------------------------------- base
 def generar_base(tipo: str, semilla: int, cfg: dict) -> HuellaBase:
     """Huella base de una identidad (sección 2). ValueError si tipo no está en TIPOS."""
@@ -230,7 +250,8 @@ def generar_base(tipo: str, semilla: int, cfg: dict) -> HuellaBase:
     periodo = float(rng.uniform(periodo_min, periodo_max))
     crestas = _sintetizar_crestas(orientacion, mascara, periodo, rng,
                                   int(generador["iteraciones"]), int(generador["orientaciones"]))
-    piel = GRIS_MEDIO - CONTRASTE * crestas.astype(np.float64)
+    crestas = _realzar(crestas, mascara, periodo)
+    piel = GRIS_MEDIO - CONTRASTE * crestas
     imagen = np.clip(np.rint(suave * piel + (1.0 - suave) * FONDO), 0, 255).astype(np.uint8)
     return HuellaBase(
         tipo=tipo,

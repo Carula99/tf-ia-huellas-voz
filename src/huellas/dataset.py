@@ -102,8 +102,9 @@ def _variante(entrada: dict, base, cfg: dict):
 
 
 def _escribir_png(ruta: Path, imagen: np.ndarray) -> None:
-    """cv2.imwrite no acepta rutas con tildes en Windows: se codifica y se escribe aparte."""
-    ok, codificado = cv2.imencode(".png", imagen)
+    """cv2.imwrite no acepta rutas con tildes en Windows: se codifica y se escribe aparte.
+    Compresión 3: con la de OpenCV por defecto la lámina a tamaño real pesaba el doble."""
+    ok, codificado = cv2.imencode(".png", imagen, [cv2.IMWRITE_PNG_COMPRESSION, 3])
     if not ok:
         raise OSError(f"No se pudo codificar {ruta} como PNG.")
     codificado.tofile(str(ruta))
@@ -180,24 +181,30 @@ def _elegir_variantes(entradas: list[dict], cfg: dict, cantidad: int = 6) -> lis
 
 
 def _cuadro(imagen: np.ndarray, nucleos, titulo: str, escala: float) -> np.ndarray:
-    """Imagen en color, achicada, con los núcleos marcados y un título arriba."""
+    """Imagen en color, a la escala pedida, con los núcleos marcados y un título arriba."""
     alto, ancho = imagen.shape
-    chica = cv2.resize(imagen, (int(round(ancho * escala)), int(round(alto * escala))), interpolation=cv2.INTER_AREA)
-    color = cv2.cvtColor(chica, cv2.COLOR_GRAY2BGR)
+    if escala != 1.0:
+        imagen = cv2.resize(imagen, (int(round(ancho * escala)), int(round(alto * escala))),
+                            interpolation=cv2.INTER_AREA)
+    color = cv2.cvtColor(imagen, cv2.COLOR_GRAY2BGR)
+    radio, grosor = int(round(18 * escala)), max(2, int(round(3 * escala)))
     for x, y in nucleos:
         centro = (int(round(x * escala)), int(round(y * escala)))
-        cv2.circle(color, centro, 9, (0, 0, 220), 2, cv2.LINE_AA)
-        cv2.circle(color, centro, 2, (0, 0, 220), -1, cv2.LINE_AA)
-    banda = np.full((24, color.shape[1], 3), 255, np.uint8)
-    cv2.putText(banda, titulo, (4, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (40, 40, 40), 1, cv2.LINE_AA)
+        cv2.circle(color, centro, radio, (0, 0, 220), grosor, cv2.LINE_AA)
+        cv2.circle(color, centro, max(2, grosor), (0, 0, 220), -1, cv2.LINE_AA)
+    banda = np.full((int(round(44 * escala)), color.shape[1], 3), 255, np.uint8)
+    cv2.putText(banda, titulo, (int(round(8 * escala)), int(round(31 * escala))), cv2.FONT_HERSHEY_SIMPLEX,
+                0.8 * escala, (40, 40, 40), 2 if escala >= 0.75 else 1, cv2.LINE_AA)
     return np.vstack([banda, color])
 
 
 def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
     """Lámina para la revisión visual (sección 4): una fila por identidad autorizada (la base y
-    6 variantes, con los núcleos marcados) y una fila con bases de intrusos, una por tipo."""
+    6 variantes, con los núcleos marcados) y una fila con bases de intrusos, una por tipo.
+    Va a tamaño real (cada huella con sus 400 × 320 px): achicada, las crestas de ~9 px de
+    período quedan cerca del límite de lo que se puede dibujar y se ven borrosas."""
     salida = RAIZ / cfg["rutas"]["figuras"] / "grilla_h1.png" if salida is None else Path(os.fspath(salida))
-    escala, columnas = 0.5, 7
+    escala, columnas = 1.0, 7
     plan = plan_dataset(cfg)
     filas = []
     for identidad in cfg["huellas"]["identidades"]:
@@ -221,14 +228,14 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
 
     alto_cuadro, ancho_cuadro = filas[0][0].shape[:2]
     vacio = np.full((alto_cuadro, ancho_cuadro, 3), 255, np.uint8)
-    separador = np.full((alto_cuadro, 6, 3), 255, np.uint8)
+    separador = np.full((alto_cuadro, 10, 3), 255, np.uint8)
     renglones = []
     for cuadros in filas:
         cuadros = cuadros + [vacio] * (columnas - len(cuadros))
         partes = []
         for n, cuadro in enumerate(cuadros):
             partes += [cuadro] if n == 0 else [separador, cuadro]
-        renglones += [np.hstack(partes), np.full((6, sum(p.shape[1] for p in partes), 3), 255, np.uint8)]
+        renglones += [np.hstack(partes), np.full((10, sum(p.shape[1] for p in partes), 3), 255, np.uint8)]
     lamina = np.vstack(renglones[:-1])
     salida.parent.mkdir(parents=True, exist_ok=True)
     _escribir_png(salida, lamina)
