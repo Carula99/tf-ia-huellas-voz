@@ -1,6 +1,7 @@
 """Lectura única de config.yaml.
 
-Contrato: docs/contratos/fase0_setup.md, sección 8. Todos los módulos leen la
+Contrato: docs/contratos/fase0_setup.md, sección 8 (las claves de H1 vienen de
+docs/contratos/h1_generador.md, sección 1). Todos los módulos leen la
 configuración con cargar_config(), así una clave faltante falla siempre igual y
 con un mensaje que la nombra.
 """
@@ -33,10 +34,20 @@ CLAVES_OBLIGATORIAS: tuple[str, ...] = (
     "huellas.intrusos.semilla_base",
     "huellas.intrusos.val",
     "huellas.intrusos.test",
+    "huellas.intrusos.tipos",
+    "huellas.generador.tamano_px",
+    "huellas.generador.periodo_base_px",
+    "huellas.generador.iteraciones",
+    "huellas.generador.orientaciones",
     "huellas.variantes.rotacion_max_grados",
     "huellas.variantes.traslacion_max_px",
     "huellas.variantes.escala_max",
     "huellas.variantes.corte_periferico",
+    "huellas.variantes.prob_corte",
+    "huellas.variantes.elastica_max_px",
+    "huellas.variantes.presion_max",
+    "huellas.variantes.ruido_sigma_max",
+    "huellas.variantes.sal_pimienta_max",
     "huellas.ventana_px",
     "huellas.periodo_crestas_px",
     "huellas.kmeans.k",

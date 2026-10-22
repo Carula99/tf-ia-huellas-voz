@@ -39,11 +39,22 @@ huellas:
     semilla_base: 10000     # el intruso i (1 a 60) usa semilla_base + i
     val: 30                 # identidades intrusas solo en validación (calibran el umbral)
     test: 30                # identidades intrusas solo en test
+    tipos: [presilla, verticilo, arco_tienda, arco]   # el intruso i es del tipo tipos[(i - 1) % 4]
+  generador:                # H1: síntesis de las huellas base (contrato h1_generador.md)
+    tamano_px: [400, 320]   # (alto, ancho) de cada imagen
+    periodo_base_px: [8.7, 9.3]   # rango del período de las crestas de cada base
+    iteraciones: 15         # pasadas del filtrado de Gabor
+    orientaciones: 16       # filtros del banco de Gabor
   variantes:                # rangos máximos de las variantes de H1
     rotacion_max_grados: 15
     traslacion_max_px: 15
     escala_max: 0.08
     corte_periferico: [0.15, 0.20]   # fracción del área, sin tocar el núcleo
+    prob_corte: 0.3         # probabilidad de que una variante tenga corte periférico
+    elastica_max_px: 3.0    # amplitud máxima de la deformación elástica
+    presion_max: 0.7        # mezcla máxima con la erosión (+) o con la dilatación (−)
+    ruido_sigma_max: 10.0   # desvío máximo del ruido gaussiano, en niveles de gris
+    sal_pimienta_max: 0.01  # fracción máxima de píxeles llevados a 0 o a 255
   ventana_px: [250, 250]    # (alto, ancho) de la ventana de H2, sin reescalar
   periodo_crestas_px: [8, 10]
   kmeans:
