@@ -1,6 +1,8 @@
 # Contrato · H1 · Generador de huellas y dataset
 
-**Versión 1 · 16/10/2026.** Es lo que verifica `tests/test_h1.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en el contrato de la Fase 0 (`config.yaml` y `src/config.cargar_config`). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
+**Versión 1.1 · 22/10/2026** (la 1 es del 16/10/2026). **Cambios en la 1.1:** se suman las aclaraciones de cómo leen el contrato los tests (sección 7) y tres criterios en 5.4, 5.5 y 5.7, marcados con *(1.1)*. Los pidió el chat que escribió los tests y el cambio está anotado en el Documento 2.
+
+Es lo que verifica `tests/test_h1.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en el contrato de la Fase 0 (`config.yaml` y `src/config.cargar_config`). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
 ## 0. Convenciones
 
@@ -208,6 +210,7 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
 - Todos dentro de sus rangos. `corte_fraccion` vale 0 o está en `corte_periferico`; cuando vale 0, `corte_angulo_grados` también.
 - La proporción de sorteos con corte está a ±0,05 de `prob_corte`.
 - El mismo `rng` (misma semilla) da los mismos parámetros.
+- *(1.1)* Respeta los rangos de un `cfg` con rangos más chicos: no los tiene fijos en el código.
 
 ### 5.5 Variantes (`aplicar_variante`)
 
@@ -217,6 +220,7 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
 - Con parámetros completos, elástica incluida: evaluando `mapa_x` y `mapa_y` (interpolación bilineal) en cada posición real de la variante que quede a ≥ 10 px de los bordes, se vuelve a su posición en la base con un error ≤ 0,5 px. Es lo que detecta un desplazamiento elástico aplicado al revés.
 - `punto_referencia`: el núcleo si hay uno, el punto medio si hay dos y `None` en el arco.
 - Corte: con los mismos parámetros y la misma semilla de `rng`, la fracción de la máscara que se pierde al pasar de `corte_fraccion = 0` a `corte_fraccion = f` está en `f ± 0,02`, y el disco de 20 px de radio alrededor de cada núcleo queda entero dentro de la máscara con corte.
+- *(1.1)* Lado del corte: 0° quita la derecha y 90° la parte de abajo. Lo quitado es un semiplano del lado del ángulo guardado, y ese ángulo es el pedido más un múltiplo de 30°. El test de corte usa también `f = 0,40` (además de 0,15 y 0,20), porque con esas dos fracciones la regla de los 30 px nunca entra en juego.
 - Presión (el resto como en `SIN_CAMBIOS`): la fracción de píxeles de la máscara por debajo de 128 crece con la presión. Con `+presion_max` es al menos 0,05 mayor que con 0, y con `−presion_max`, al menos 0,05 menor.
 - Ruido (el resto como en `SIN_CAMBIOS`): con `ruido_sigma = 10`, el desvío de la diferencia con la base dentro de la máscara está entre 7 y 13. Con `sal_pimienta = 0,02`, la fracción de píxeles en 0 o 255 que no lo estaban en la base está entre 0,01 y 0,03.
 - Determinismo: la misma base, los mismos parámetros y un `rng` con la misma semilla dan una `imagen` idéntica.
@@ -238,6 +242,7 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
 - Parámetros dentro de los rangos de `cfg`.
 - Reproducible: rehacer una fila a partir de su `tipo`, `semilla` y `variante` con la receta de la sección 4 da exactamente la misma imagen que el PNG. Generar dos veces en carpetas distintas da PNG idénticos byte a byte y el mismo `metadatos.csv`.
 - Si ya hay datos: `FileExistsError` sin `sobrescribir`, sin cambiar ningún archivo; con `sobrescribir=True` vuelve a generar.
+- *(1.1)* Con `sobrescribir=True` no se borra nada que no sea un PNG de `train/`, `val/` o `test/` o `metadatos.csv`.
 - `generar_lamina(cfg, salida)` escribe en `salida` un PNG que se puede leer y devuelve esa ruta.
 
 ### 5.8 Aceptación (`@pytest.mark.aceptacion`)
@@ -248,3 +253,17 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
 
 - En `docs/figuras/grilla_h1.png` se reconocen una presilla, un verticilo y un arco en tienda; las variantes muestran rotación, traslación, cortes, presión y ruido, y las marcas de núcleo caen sobre el núcleo.
 - Tiempo de `venv\Scripts\python -m src.huellas.dataset` en la notebook.
+
+## 7. Aclaraciones de la versión 1.1 (cómo leen el contrato los tests)
+
+- **Sección 1:** los `<float …>` exigen `float` de Python (`3` no sirve, `3.0` sí). Las claves `fijo` se comparan por tipo y valor. Si falta una sección entera (`huellas.generador`, `huellas.variantes`, `huellas.intrusos` o `huellas`), el `ValueError` nombra todas sus hojas nuevas.
+- **Distancia al borde**, a los centros de píxel: `min(x, y, ancho − 1 − x, alto − 1 − y)`. "Dentro de la imagen": `0 ≤ x ≤ ancho − 1` y `0 ≤ y ≤ alto − 1`.
+- **Verticilo:** el delta izquierdo queda a ≥ 40 px a la izquierda del núcleo de más a la izquierda, y el derecho a ≥ 40 px a la derecha del de más a la derecha.
+- **Crestas oscuras:** "afuera" son los píxeles a más de 10 px de la máscara, en las dos comparaciones.
+- **Variantes:** las singularidades se comparan por cercanía, sin exigir orden. Tienen que estar todos los núcleos; un delta a menos de 10 px del borde, o afuera, puede faltar.
+- **Núcleos lejos del borde:** el test afín no exceptúa núcleos cerca del borde, y el disco de 20 px tiene que quedar dentro de la máscara en cualquier variante. En la práctica, el generador tiene que poner los núcleos bien adentro.
+- **Corte:** si ningún ángulo sirve, `corte_fraccion` y `corte_angulo_grados` quedan en 0 y la máscara no cambia. El ángulo usado se guarda en `[0, 360)`. El disco de 20 px se toma literal: entero dentro de la máscara con corte.
+- **Sal y pimienta:** la fracción se mide sobre los píxeles que en la base no estaban en 0 ni en 255.
+- **metadatos.csv:** UTF-8 sin BOM; los `float` pueden escribirse con hasta 4 decimales (`0.15` o `0.1500`). "Crea exactamente": en `destino` no queda ningún otro archivo. "`FileExistsError` sin tocar nada" incluye no crear carpetas.
+- **Lámina:** `generar_lamina` se prueba con el `cfg` real.
+- **Tiempo:** el archivo de tests llama unas 45 veces a `generar_base`; si una base tarda más de ~2,5 s, pytest pasa de los 2 minutos.
