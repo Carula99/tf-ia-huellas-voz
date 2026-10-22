@@ -1,6 +1,6 @@
 # Contrato · V1 · Dataset de voz
 
-**Versión 1 · 22/10/2026.** Es lo que verifica `tests/test_v1.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en el contrato de la Fase 0 (`config.yaml`, `src/config.cargar_config` y las claves `voz.*`) y en las grabaciones de `data/voz/notebook` (decisiones 33 a 37). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
+**Versión 1.1 · 22/10/2026** (la 1 es del mismo día). **Cambios en la 1.1:** se suman las aclaraciones de cómo leen el contrato los tests (sección 11) y los puntos marcados con *(1.1)* en las secciones 6 y 7: el nombre de los clips de ruido, cómo se mide `larga`, la palabra de 2,8 s con cierres, una nota de WhatsApp cortada, la reproducción contra el corte recortado a [−1, 1] y el mínimo por comando contado solo con la notebook. Los pidió el chat que escribió los tests y el cambio se anota en el Documento 2. Es lo que verifica `tests/test_v1.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en el contrato de la Fase 0 (`config.yaml`, `src/config.cargar_config` y las claves `voz.*`) y en las grabaciones de `data/voz/notebook` (decisiones 33 a 37). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
 **Qué hace V1:** junta los audios de las cuatro fuentes (micrófono de la notebook, audios de celular mandados por WhatsApp, voces sintéticas y ruido ambiente), los pasa a un formato común (WAV de 16 kHz, mono, PCM de 16 bits) con una palabra por archivo, descarta solo lo que está mal (con el motivo anotado) y reparte todo en train, val y test por hablante. No normaliza, no filtra y no recorta la palabra: eso es V2.
 
@@ -217,7 +217,7 @@ def muestra_revision(filas: list[dict], n: int, semilla: int) -> list[str]:
    - `cortada` (notebook y WhatsApp): la palabra queda a menos de `margen_borde_s` del principio o del final del archivo fuente.
    - `duracion`: la palabra dura fuera de `voz.duracion_palabra_s` (intervalo cerrado).
    - `doble` (WhatsApp, en un audio con 3 cortes o más): la palabra dura más que `factor_doble` veces la mediana de las palabras de ese audio. Es la forma de detectar dos repeticiones pegadas.
-5. Solo `otro` de WhatsApp: `larga`, si la palabra sola dura más que `clip_max_s`.
+5. Solo `otro` de WhatsApp: `larga`, si la palabra sola dura más que `clip_max_s`. La palabra es la del corte (`fin_s − inicio_s` de `cortar_repeticiones`, como en la regla 3 de la sección 4): en ese caso el clip es la palabra entera y el detector no encuentra nada sobre él (sección 11) *(1.1)*.
 
 En `otro` no se exige palabra: una tos, un golpe o el ruido ambiente pueden dar 0 segmentos y entran igual.
 
@@ -228,7 +228,7 @@ En `otro` no se exige palabra: una tos, un golpe o el ruido ambiente pueden dar 
 - TTS: todas las voces van a train.
 - Ruido: la del archivo según `ruido.particiones`. `ValueError` si una grabación de ruido no está en ninguna lista o está en dos.
 
-**Archivos** (relativos a `destino`): `{particion}/nb_{nombre}.wav` (notebook, con el nombre de la toma sin extensión), `{particion}/wa_{nombre}_s{k:02d}.wav` (WhatsApp, corte `k` desde 1), `{particion}/tts_{voz}_{palabra}_r{k}.wav` y `{particion}/ruido_{nombre}_c{k:02d}.wav` (clip `k` desde 1).
+**Archivos** (relativos a `destino`): `{particion}/nb_{nombre}.wav` (notebook, con el nombre de la toma sin extensión), `{particion}/wa_{nombre}_s{k:02d}.wav` (WhatsApp, corte `k` desde 1), `{particion}/tts_{voz}_{palabra}_r{k}.wav` y `{particion}/ruido_{nombre}_c{k:02d}.wav` (clip `k` desde 1; `{nombre}` es el nombre del archivo sin extensión, así que de `ruido_20261020_093611.wav` sale `ruido_ruido_20261020_093611_c01.wav` *(1.1)*).
 
 **metadatos.csv** en `destino`: UTF-8 sin BOM, separado por comas, encabezado igual a `COLUMNAS` y una fila por WAV. Orden: por origen (como en `ORIGENES`), después por `fuente` (orden de texto) y después por `toma`.
 
@@ -278,7 +278,7 @@ Con palabras sintéticas (por ejemplo, un tono con armónicos de 0,3 a 1,5 s y r
 ### 7.4 Cortes (`cortar_repeticiones`)
 
 - Un corte por segmento, en orden; `inicio_s` y `fin_s` iguales a los del detector.
-- Cada clip contiene su palabra, está dentro del audio, dura a lo sumo `clip_max_s` y no se solapa con los otros.
+- Cada clip contiene su palabra, está dentro del audio, dura a lo sumo `clip_max_s` (con palabras más cortas que `clip_max_s`; si la palabra es más larga, el clip es la palabra, regla 3 de la sección 4 *(1.1)*) y no se solapa con los otros.
 - Con pausas largas y lejos de los bordes, el margen es `margen_s` de cada lado (±1 muestra). Con una pausa menor que `2·margen_s`, el clip termina en el punto medio del silencio. Con una palabra de 2,5 s y `margen_s = 0,4`, el clip dura `clip_max_s` y la palabra queda centrada.
 
 ### 7.5 Voces sintéticas (`plan_tts`, `sintetizar_tts`)
@@ -296,7 +296,7 @@ La fuente de prueba tiene notebook (tomas a 44,1 kHz con `sesiones.csv` y `notas
 - Particiones según las listas, TTS en train y ruido según `ruido.particiones`.
 - Una persona con sesión en la notebook y audios de WhatsApp, puesta en val: sus tomas de la notebook van a val y todos sus audios de WhatsApp quedan excluidos con motivo `whatsapp_val_test`. En train, los dos van a train.
 - `ValueError` (nombrando lo que falla) con: un código con audios que no está en ninguna lista o está en dos; los dos códigos de un grupo en particiones distintas; un código que solo tiene WhatsApp puesto en val o en test; un ruido sin partición; una fila de `sesiones.csv` sin archivo o un `.wav` sin fila; un audio de WhatsApp con un nombre que no sigue el formato; una exclusión de `notas.txt` que nombra un archivo que no existe; un MP3 del plan que falta.
-- Motivos: cada uno de `MOTIVOS` aparece en un clip armado para provocarlo (una toma anotada en `notas.txt`, una con el 2 % de las muestras en ±1, una vacía, una con dos palabras del mismo nivel, una con la palabra pegada al final, una con la palabra de 2,8 s, dos repeticiones pegadas en un audio de WhatsApp y un `otro` de WhatsApp de 3,5 s), y los clips buenos no tienen motivo. Una toma con pico 1,0 en el 0,1 % de las muestras no está saturada, y una con un ruido 15 dB más bajo después de la palabra no tiene dos palabras. Con `#k` en `notas.txt` se excluye solo el corte `k`.
+- Motivos: cada uno de `MOTIVOS` aparece en un clip armado para provocarlo (una toma anotada en `notas.txt`, una con el 2 % de las muestras en ±1, una vacía, una con dos palabras del mismo nivel, una con la palabra pegada al final, una nota de WhatsApp con la palabra pegada al final *(1.1)*, una con una palabra de 2,8 s con cierres internos de 0,1 s *(1.1)*, dos repeticiones pegadas en un audio de WhatsApp y un `otro` de WhatsApp de 3,5 s), y los clips buenos no tienen motivo. Una toma con pico 1,0 en el 0,1 % de las muestras no está saturada, y una con un ruido 15 dB más bajo después de la palabra no tiene dos palabras. Con `#k` en `notas.txt` se excluye solo el corte `k`.
 - Un `otro` sin segmentos (una tos corta o ruido) entra igual.
 
 ### 7.7 Generación (`generar_dataset` con la misma fuente, en `tmp_path`)
@@ -305,7 +305,7 @@ La fuente de prueba tiene notebook (tomas a 44,1 kHz con `sesiones.csv` y `notas
 - Cada WAV es de 16 kHz, mono y `PCM_16` (`soundfile.info`), dura `duracion_s` y a lo sumo `clip_max_s`.
 - `metadatos.csv` tiene el encabezado igual a `COLUMNAS`, una fila por WAV en el orden de la sección 6, y coincide con lo que devuelve la función (con los tipos de la sección 6); lo mismo `excluidas.csv` con `COLUMNAS_EXCLUIDAS`. Entre los dos está cada candidato del inventario exactamente una vez.
 - En los comandos, la palabra dura dentro de `voz.duracion_palabra_s` y `n_segmentos = 1`.
-- Reproducible: rehacer una fila con `leer_audio(fuente)`, `remuestrear` y el corte `[muestra_inicio, muestra_fin)` da el WAV con diferencia ≤ 1/32767. Generar dos veces en carpetas distintas da WAV idénticos byte a byte y los mismos CSV.
+- Reproducible: rehacer una fila con `leer_audio(fuente)`, `remuestrear` y el corte `[muestra_inicio, muestra_fin)`, recortado a [−1, 1] como hace `guardar_wav` *(1.1)*, da el WAV con diferencia ≤ 1/32767. Generar dos veces en carpetas distintas da WAV idénticos byte a byte y los mismos CSV.
 - Ningún hablante en dos particiones.
 - Si ya hay datos: `FileExistsError` sin `sobrescribir` y sin cambiar nada; con `sobrescribir=True` vuelve a generar y no borra nada que no sea un WAV de `train/`, `val/` o `test/`, `metadatos.csv` o `excluidas.csv`.
 - `muestra_revision`: determinista con la misma semilla, sin repetidos, solo comandos, y de WhatsApp cuando alcanzan.
@@ -317,7 +317,7 @@ Se saltea con `pytest.skip` si no existe `data/voz/notebook/sesiones.csv` o si f
 - Cada toma de `sesiones.csv` y cada audio de `whatsapp/` está en `metadatos.csv` o en `excluidas.csv`. `p03/p03_identificar_02.wav` está excluida con motivo `notas`.
 - Las exclusiones automáticas (todos los motivos menos `notas`) son a lo sumo el 5 % de los clips de comandos de la notebook y a lo sumo el 5 % de los de WhatsApp.
 - Al menos 10 hablantes reales; los de cada partición, según las listas de `config.yaml`. Ningún clip de WhatsApp en val ni en test, y ninguno excluido con motivo `whatsapp_val_test` (con las particiones reales no se pierde ninguno).
-- Cada hablante que grabó en la notebook tiene al menos `min_por_comando` clips de cada comando.
+- Cada hablante que grabó en la notebook tiene al menos `min_por_comando` clips de la notebook de cada comando (sus audios de WhatsApp no cuentan) *(1.1)*.
 - En cada partición hay hablantes de las dos fechas de grabación de la notebook (columna `fecha` de `sesiones.csv`).
 - Cada partición tiene clips de las cuatro clases; TTS solo en train, con menos clips que los reales de train (notebook y WhatsApp).
 
@@ -349,3 +349,17 @@ Se saltea con `pytest.skip` si no existe `data/voz/notebook/sesiones.csv` o si f
 - **18 personas en la notebook, no 20:** p09 y p13, y p14 y p17, son la misma persona (como p01 y p02). Reparto de 10, 4 y 4 personas (decisión de Santiago), con hombres y mujeres y las dos tandas en cada partición.
 - **val y test solo con personas de la notebook**, de las dos tandas: es el micrófono de la demo. Las 8 personas que solo mandaron WhatsApp suman variedad de voces en train. Los WhatsApp de alguien de val o test no se usan (con el reparto elegido, p08, p09 y p15 quedan en train y no se pierde nada).
 - **Control de calidad automático con motivo** (la idea del 17/10): se descarta solo lo saturado, vacío, cortado, con dos palabras o de duración fuera de rango, y queda anotado en `excluidas.csv`.
+
+## 11. Cómo leen el contrato los tests (1.1)
+
+Aclaraciones que sumó el chat que escribió `tests/test_v1.py` (22/10/2026). Lo marcado *(1.1)* en las secciones 6 y 7 sale de acá.
+
+- **Límite del detector:** una palabra pareja que ocupa más del 90 % del audio no se detecta: el percentil 10 de los niveles cae dentro de ella y el umbral (`piso + margen_piso_db`) queda por encima del tope. Por eso `larga` se mide con el corte, y la toma de 2,8 s que provoca `duracion` tiene cierres internos de 0,1 s, como el habla. Con los datos reales, una toma hablada casi entera se excluye igual, pero como `sin_palabra`.
+- **`cortada` y `doble` en WhatsApp:** los casos de los tests dan lo mismo midiendo la palabra con el corte o con la detección sobre el clip; el contrato no fija cuál.
+- **Clips de ruido:** `ruido_{nombre}_c{k:02d}.wav` con el nombre del archivo sin extensión (queda `ruido_ruido_…`).
+- **Reproducción (7.7):** el WAV se compara con el corte del audio remuestreado recortado a [−1, 1], porque `guardar_wav` recorta y el remuestreo puede pasar apenas de 1. Al comparar `pico` y `rms_db` con el WAV, el pico se toma recortado a 1 y `rms_db` solo se compara por encima de −60 dBFS (más abajo la cuantización de 16 bits lo mueve unas décimas).
+- **Mínimo por comando (7.8):** se cuentan solo los clips de la notebook de cada hablante.
+- **Configuración:** donde dice `<float …>` se acepta también un entero (no `bool`). La falta de una clave se prueba con `cargar_config(ruta)` de la Fase 0 sobre una copia de `config.yaml` sin esa clave.
+- **No se fijan:** el `codigo` en TTS y en el ruido, la forma de "vacío" en lo que devuelve `inventario` (`""` o `None`), el texto de `nota` en los motivos automáticos y el mensaje del `ValueError` de un ruido más corto que sus clips.
+- **Sin definir:** un código sin ningún audio puesto en val o en test (el contrato admite códigos sin audios en las listas y a la vez prohíbe en val y test a un hablante sin sesiones de la notebook). No se prueba.
+- **PyAV:** los tests de M4A y la fuente de prueba de 7.6 y 7.7 lo necesitan; sin `av` instalado, fallan.
