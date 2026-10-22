@@ -86,6 +86,42 @@ voz:
     eps: 1.0e-9
     confianza_min: 0.60
     pca_componentes_candidatas: [20, 30]
+  dataset:                  # V1: dataset de voz (contrato v1_dataset.md, sección 2)
+    clip_max_s: 3.0         # igual a push_to_talk_max_s
+    saturacion: 0.98        # nivel que cuenta como tope
+    saturacion_frac: 0.01   # un clip con más del 1 % de las muestras en el tope está saturado
+    mismo_hablante: [[p01, p02], [p09, p13], [p14, p17]]   # códigos que son la misma persona
+    particiones:            # por hablante; los no fijos se sortearon con semilla_global (contrato, sección 2)
+      train: [p01, p02, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p17,
+              p22, p23, p24, p25, p26, p27, p28, p29]
+      val: [p03, p04, p20, p21]
+      test: [p05, p16, p18, p19]
+    min_por_comando: 5      # clips de la notebook por comando y hablante (aceptación)
+    deteccion:              # calibrada con las 504 tomas y los 147 audios de WhatsApp (22/10)
+      trama_ms: 20
+      avance_ms: 10
+      rango_db: 25.0
+      margen_piso_db: 10.0
+      dif_palabra_db: 10.0
+      nivel_min_db: -55.0
+      pausa_min_s: 0.20
+      segmento_min_s: 0.10
+      margen_borde_s: 0.03
+    whatsapp:
+      margen_s: 0.40        # silencio que se deja a cada lado de la palabra
+      factor_doble: 1.6
+    ruido:
+      clips_por_archivo: 10
+      particiones:          # archivos de data/voz/notebook/ruido, sin extensión
+        train: [ruido_20261017_142802, ruido_20261020_085405, ruido_20261020_092822]
+        val: [ruido_20261020_093611]
+        test: [ruido_20261020_094933]
+    tts:                    # edge-tts; solo en train
+      voces: [es-AR-ElenaNeural, es-AR-TomasNeural, es-UY-ValentinaNeural, es-UY-MateoNeural,
+              es-CL-CatalinaNeural, es-CL-LorenzoNeural, es-MX-DaliaNeural, es-MX-JorgeNeural,
+              es-ES-ElviraNeural, es-ES-AlvaroNeural, es-CO-SalomeNeural, es-CO-GonzaloNeural]
+      velocidades: ["-10%", "+10%"]
+      otros: [conocer, salida, identidad]
 
 metas:                      # plan de desarrollo, sección 1.3
   identificacion_min: 0.95

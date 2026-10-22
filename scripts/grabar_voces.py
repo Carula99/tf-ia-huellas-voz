@@ -1,8 +1,8 @@
 """Grabación de voces con el micrófono de la notebook (herramienta de captura para V1).
 
 No forma parte del pipeline con tests: solo graba y anota. Los audios quedan en
-data/voz/notebook/ (fuera de Git) a la frecuencia nativa del micrófono; V2 los pasa
-a 16 kHz igual que al resto. El reparto entrenamiento / test se decide después, en V1.
+data/voz/notebook/ (fuera de Git) a la frecuencia nativa del micrófono; V1 (src/voz/dataset.py)
+los pasa a 16 kHz igual que al resto y los reparte entre entrenamiento, validación y prueba.
 
 Uso, desde la raíz del repo:
     venv\\Scripts\\python scripts\\grabar_voces.py --listar        (ver micrófonos)

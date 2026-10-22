@@ -66,6 +66,6 @@ tf-ia-huellas-voz/
 
 - **Huellas:** generador propio inspirado en SFinGe (Cappelli et al., 2000), con el modelo de orientación de Sherlock y Monro (1993). No se usan huellas reales.
 - **Voces sintéticas:** edge-tts, que usa el servicio de texto a voz de Microsoft Edge.
-- **Librerías**, cada una con su licencia: NumPy, SciPy, scikit-image, scikit-learn, soundfile, joblib e ipykernel (BSD); OpenCV (Apache 2.0); librosa (ISC); sounddevice, PyYAML y pytest (MIT); edge-tts (LGPL-3.0); CustomTkinter (CC0-1.0 / MIT según los metadatos del paquete); Matplotlib (licencia de Matplotlib, basada en la PSF).
+- **Librerías**, cada una con su licencia: NumPy, SciPy, scikit-image, scikit-learn, soundfile, joblib e ipykernel (BSD); OpenCV (Apache 2.0); librosa (ISC); sounddevice, PyYAML y pytest (MIT); edge-tts (LGPL-3.0); PyAV (BSD-3-Clause, con FFmpeg bajo LGPL, para leer los .m4a y algunas notas de voz); CustomTkinter (CC0-1.0 / MIT según los metadatos del paquete); Matplotlib (licencia de Matplotlib, basada en la PSF).
 - **IA generativa:** su uso (herramientas, prompts y cómo se verificó cada resultado) se documenta en el informe.
 - **Código:** licencia a definir antes de hacer público el repo.
