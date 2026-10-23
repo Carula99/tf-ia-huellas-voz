@@ -3,8 +3,8 @@
 
 Se pega en un chat nuevo, sin el contexto del desarrollo, seguido del contenido completo de `h2_preprocesamiento.md`.
 
-- **Fecha:** [completar el día que se use]
-- **Herramienta y modelo:** [completar]
+- **Fecha:** 22/10/2026
+- **Herramienta y modelo:** Claude (claude-opus-5-5), en otro chat. Antes de escribir el archivo pidió confirmar lecturas del contrato (respondidas en la versión 1.1) y, al probarlo con un oráculo descartable, encontró que la ventana salía cabeza abajo (corregido en la 1.2). Entregó `tests/test_h2.py` para el contrato 1.2: 182 tests normales y 29 de aceptación.
 
 ```text
 Actuá como un ingeniero de testing en Python. Voy a implementar la etapa H2 (preprocesamiento de huellas: segmentación, punto de referencia, enderezado, ventana de 250 × 250, realce, binarización y esqueleto) del trabajo final de IA I (Python 3.12, Windows, VS Code). La etapa H1 (generador de huellas sintéticas y variantes) ya está implementada y probada: los tests la usan para generar las huellas. Abajo va el contrato completo de H2: firmas exactas, tipos y criterios de aceptación. Escribí un único archivo, tests/test_h2.py, con pytest, que verifique cada punto de la sección 5 del contrato (la 6 es manual: no la automatices).
