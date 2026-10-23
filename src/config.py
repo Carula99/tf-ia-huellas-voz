@@ -1,10 +1,10 @@
 """Lectura única de config.yaml.
 
 Contrato: docs/contratos/fase0_setup.md, sección 8 (las claves de H1 vienen de
-docs/contratos/h1_generador.md, sección 1, y las de H2, de
-h2_preprocesamiento.md, sección 1). Todos los módulos leen la
-configuración con cargar_config(), así una clave faltante falla siempre igual y
-con un mensaje que la nombra.
+docs/contratos/h1_generador.md, sección 1; las de H2, de
+h2_preprocesamiento.md, sección 1, y las de H3, de h3_caracteristicas.md,
+sección 1). Todos los módulos leen la configuración con cargar_config(), así una
+clave faltante falla siempre igual y con un mensaje que la nombra.
 """
 
 from __future__ import annotations
@@ -60,6 +60,20 @@ CLAVES_OBLIGATORIAS: tuple[str, ...] = (
     "huellas.preprocesamiento.holgura_nucleo_px",
     "huellas.preprocesamiento.clahe_limite",
     "huellas.preprocesamiento.clahe_grilla",
+    "huellas.caracteristicas.grilla_orientacion",
+    "huellas.caracteristicas.cobertura_min",
+    "huellas.caracteristicas.gabor_periodos_px",
+    "huellas.caracteristicas.gabor_orientaciones",
+    "huellas.caracteristicas.anillos_gabor_px",
+    "huellas.caracteristicas.sectores_gabor",
+    "huellas.caracteristicas.erosion_gabor_px",
+    "huellas.caracteristicas.borde_minucia_px",
+    "huellas.caracteristicas.componente_min_px",
+    "huellas.caracteristicas.espuela_px",
+    "huellas.caracteristicas.par_terminaciones_px",
+    "huellas.caracteristicas.par_bifurcaciones_px",
+    "huellas.caracteristicas.anillos_minucias_px",
+    "huellas.caracteristicas.grilla_minucias",
     "huellas.kmeans.k",
     "huellas.kmeans.n_init",
     "huellas.kmeans.max_iter",

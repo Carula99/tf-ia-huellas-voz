@@ -67,6 +67,21 @@ huellas:
     holgura_nucleo_px: 6.0  # cuánto puede mover el ajuste cada núcleo detectado
     clahe_limite: 2.0       # límite de contraste de CLAHE
     clahe_grilla: 8         # celdas por lado de CLAHE
+  caracteristicas:          # H3 (contrato h3_caracteristicas.md)
+    grilla_orientacion: 5   # celdas por lado de la grilla de orientación
+    cobertura_min: 0.5      # fijo: zona con menos huella que esto → NaN (se imputa)
+    gabor_periodos_px: [8.0, 10.0]
+    gabor_orientaciones: 6
+    anillos_gabor_px: [20.0, 50.0, 80.0, 110.0]
+    sectores_gabor: 8
+    erosion_gabor_px: 10.0  # Gabor solo a esta distancia del borde de la máscara
+    borde_minucia_px: 14.0  # fijo: minucias más cerca del borde de la máscara → se descartan
+    componente_min_px: 20   # componentes del esqueleto más chicas → afuera
+    espuela_px: 12          # largo máximo de una espuela
+    par_terminaciones_px: 10.0
+    par_bifurcaciones_px: 8.0
+    anillos_minucias_px: [0.0, 40.0, 75.0, 110.0]
+    grilla_minucias: 4
   kmeans:
     k: 3
     n_init: 15
