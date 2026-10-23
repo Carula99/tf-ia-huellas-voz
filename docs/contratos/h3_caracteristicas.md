@@ -1,7 +1,7 @@
 
 # Contrato · H3 · Características ponderadas y PCA propio
 
-**Versión 1 · 22/10/2026.**
+**Versión 1.1 · 23/10/2026** (la 1 es del 22/10). **Cambio en la 1.1:** el PCA rechaza "todas las filas iguales" comparando las filas (`np.all(X == X[0])`), además de `traza(Σ) = 0`: con copias de una fila cualquiera, la media puede diferir de la fila en el último decimal y la traza queda en ~1e-30, no en 0 (lo encontró el chat de tests). Cambia la regla 3 del PCA (sección 2). Además, se suman a la sección 8 las lecturas del contrato que dejó anotadas el chat que escribe `tests/test_h3.py`, confirmadas por Santiago. Ningún criterio cambia de umbral. Se anota en el Documento 2 junto con los tests.
 
 Es lo que verifica `tests/test_h3.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml` y `src/config.cargar_config`), de H1 (convenciones, `generar_base`, `ParametrosVariante`, `sortear_parametros`, `aplicar_variante`, `plan_dataset`, `generar_dataset`, `metadatos.csv` y la receta de la sección 4) y de H2 (`preprocesar` y `HuellaPreprocesada`). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
@@ -82,7 +82,7 @@ def silhouette(X: np.ndarray, etiquetas) -> float: ...
 
 1. `n_componentes` es `None` o un `int` ≥ 1 (no `bool`); otra cosa: `ValueError` en el constructor.
 2. `ajustar(X)`: `X` es un array de 2 dimensiones `(n, d)` con `n ≥ 2`, `d ≥ 1` y valores finitos; si no, `ValueError`. Se trabaja en `float64` y no se modifica `X`.
-3. `media` = media de cada columna; `Xc = X − media`; `Σ = Xcᵀ·Xc / (n − 1)`. Si `traza(Σ) = 0` (todas las filas iguales): `ValueError`.
+3. `media` = media de cada columna; `Xc = X − media`; `Σ = Xcᵀ·Xc / (n − 1)`. Si todas las filas de `X` son iguales (`np.all(X == X[0])`) o si `traza(Σ) = 0`: `ValueError`. *(1.1)* Se comparan las filas porque la traza sola depende del redondeo.
 4. Autovalores y autovectores de Σ con `np.linalg.eigh`, ordenados de mayor a menor autovalor. `k = n_componentes`, o `min(n − 1, d)` si es `None`; si `k > min(n − 1, d)`: `ValueError`.
 5. `componentes` son los `k` primeros autovectores, uno por fila. **Signo:** en cada componente, la entrada de mayor valor absoluto (la primera, si hay empate) es positiva.
 6. `varianza` son sus autovalores (los negativos por redondeo valen 0) y `proporcion_varianza = varianza / traza(Σ)`.
@@ -266,3 +266,16 @@ Un dataset chico escrito por el test en `tmp_path`: los PNG (`cv2.imwrite`) de 1
 - **`HuellaPreprocesada` armada a mano** (casos sintéticos de 6.4): los campos que H3 no usa (`binaria`, `punto_referencia`, `metodo`, `nucleos`, `angulo` y `matriz`) pueden tener cualquier valor del tipo de la sección 2 de H2 (por ejemplo `binaria = esqueleto`, `(124.5, 124.5)`, `"curvatura"`, `()`, `0.0` y la identidad de 2 × 3). Con `realzada` uniforme, los globales de Gabor son NaN (4.2); esos casos solo miran `extraer_minucias` y el bloque de orientación.
 - **Sección 1**, como en H2: los `<float …>` exigen `float` de Python (`8` no sirve, `8.0` sí), también dentro de las listas; los enteros, `int` que no sea `bool`; `cobertura_min` y `borde_minucia_px` se comparan por tipo y valor; si falta la sección `huellas.caracteristicas` entera, el `ValueError` nombra sus 14 claves.
 - **Errores de `ajustar_escalador` y `transformar`:** con dicts armados a mano (por ejemplo, con los bloques de la muestra).
+
+### Sumadas en la versión 1.1 (lecturas del chat de tests)
+
+El chat que escribe `tests/test_h3.py` no hizo preguntas: armó los oráculos de la sección 4, dieron los valores del prototipo de esta sección y dejó estas lecturas en el docstring del test. Santiago las confirmó el 23/10.
+
+- **Oráculo de Gabor (6.4):** se compara en las 120 variantes de la muestra (el contrato pide al menos 6).
+- **PCA de la muestra y del dataset (6.6 y 6.9):** "las mismas proyecciones que scikit-learn" se prueba con `n_componentes=None` (con las 72 filas de train, `k = 71`) y con `n_componentes=3` (el de la figura), contra `sklearn.decomposition.PCA(n_components=k, svd_solver="full")`. Con `k = 71`, el oráculo difiere de scikit-learn en 2e-12.
+- **6.7:** la densidad de minucias y la distancia al centroide se promedian, por identidad, sobre sus 40 variantes de la muestra (train, val y test), separadas en con corte y sin corte. Con esa lectura salen los valores de arriba; con solo val y test, las distancias darían 1,065, 1,051 y 0,970.
+- **Umbrales de silhouette (6.6 y 6.9):** se miden con `sklearn.metrics.silhouette_score`; la silhouette propia se compara aparte con la de scikit-learn (6.3 y 6.6).
+- **Tolerancias:** son absolutas salvo donde dice "relativa". "Es igual" sin tolerancia (6.2: `ajustar_transformar`, `transformar` de un vector y el determinismo; 6.5: `transformar` de un vector y fila por fila) se compara a 1e-12; `np.array_equal` (6.4 y 6.8), exacto.
+- **Dataset chico (6.8):** los PNG se escriben con `cv2.imencode` y `tofile` (los mismos bytes que `cv2.imwrite`, sin problemas con tildes en la ruta). Las 2 de val de cada identidad son las dos primeras de val del plan (variantes 25 y 26); la carpeta sin fuga tiene, con esos nombres, las variantes 27 y 28, y los mismos intrusos. "Con `sobrescribir=True` lo vuelve a escribir": se reemplaza el npz por bytes que no son un npz y tiene que volver a quedar el mismo npz.
+- **Todas las filas iguales (6.2):** el test usa 8 copias de una fila con valores exactos en binario (`[3.0, -1.0, 2.0, 0.5, 10.0]`), que da `ValueError` con las dos condiciones de la regla 3.
+- **`FileNotFoundError` de 4.5:** no se prueban, porque no están en la sección 6; el código los lanza igual.
