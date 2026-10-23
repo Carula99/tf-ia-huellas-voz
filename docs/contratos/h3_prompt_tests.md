@@ -4,7 +4,7 @@
 Se pega en un chat nuevo, sin el contexto del desarrollo, seguido del contenido completo de `h3_caracteristicas.md`.
 
 - **Fecha:** 22/10/2026
-- **Herramienta y modelo:** Claude, en otro chat (anotar el modelo cuando entregue el archivo).
+- **Herramienta y modelo:** Claude (claude-opus-5-5), en otro chat, con el contrato versión 1. No hizo preguntas: armó los oráculos de la sección 4, que dieron los valores del prototipo de la sección 8, y dejó sus lecturas del contrato en el docstring del test (pasaron a la versión 1.1, junto con el caso de "todas las filas iguales" del PCA, que encontró él). Lo probó con una implementación descartable que no se entrega y con errores metidos a propósito. Entregó `tests/test_h3.py` el 23/10/2026: 144 tests normales (58 funciones con parametrize) y 9 de aceptación.
 
 ```text
 Actuá como un ingeniero de testing en Python. Voy a implementar la etapa H3 (características de huellas por bloques —orientación, Gabor y minucias—, escalador con imputación, PCA propio y silhouette propia) del trabajo final de IA I (Python 3.12, Windows, VS Code). Las etapas H1 (generador de huellas sintéticas y variantes) y H2 (preprocesamiento: ventana de 250 × 250 alineada, realce, binarización y esqueleto) ya están implementadas y probadas: los tests las usan para generar y preprocesar las huellas. Abajo va el contrato completo de H3: firmas exactas, definiciones y criterios de aceptación. Escribí un único archivo, tests/test_h3.py, con pytest, que verifique cada punto de la sección 6 del contrato (la 7 es manual: no la automatices).
