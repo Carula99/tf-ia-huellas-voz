@@ -87,9 +87,10 @@ huellas:
     n_init: 15
     max_iter: 300
     tol: 1.0e-4
-  umbral:
-    criterio: eer           # eer o far_max
-    far_max_val: 0.05       # se usa si criterio = far_max
+  umbral:                   # H4 (contrato h4_clasificacion.md)
+    criterio: far_max       # eer o far_max; τ* en la mitad del intervalo que cumple el criterio
+    far_max_val: 0.01       # con 90 intrusos de val, ninguno aceptado
+    piso_dispersion: 0.5    # fijo: r_k no baja de esta fracción de la dispersión de todo train
 
 voz:
   frecuencia_muestreo: 16000

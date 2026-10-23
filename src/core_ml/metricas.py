@@ -1,6 +1,7 @@
 """Métricas propias con NumPy (compartidas por los carriles de huellas y de voz).
 
-Contrato: docs/contratos/h3_caracteristicas.md (versión 1.1), sección 2.
+Contratos: docs/contratos/h3_caracteristicas.md (versión 1.1), sección 2 (silhouette), y
+docs/contratos/h4_clasificacion.md (versión 1.1), sección 2 (matriz_confusion).
 """
 
 from __future__ import annotations
@@ -57,3 +58,34 @@ def silhouette(X: np.ndarray, etiquetas) -> float:
     usar = varias & (mayor > 0)
     s[usar] = (b[usar] - a[usar]) / mayor[usar]
     return float(s.mean())
+
+
+def matriz_confusion(verdad, prediccion, etiquetas) -> np.ndarray:
+    """Matriz de confusión M (int64, m × m) con m = len(etiquetas).
+
+    M[i, j] es la cantidad de posiciones con verdad == etiquetas[i] y prediccion == etiquetas[j]
+    (filas: lo real; columnas: lo predicho), como confusion_matrix de scikit-learn con labels.
+    Acepta enteros y textos. Contrato: docs/contratos/h4_clasificacion.md (versión 1.1), sección 2.
+
+    Raises:
+        ValueError: si los largos no coinciden, si etiquetas está vacía o repite valores, o si
+            algún valor de verdad o prediccion no está en etiquetas.
+    """
+    verdad, prediccion, etiquetas = list(verdad), list(prediccion), list(etiquetas)
+    if len(verdad) != len(prediccion):
+        raise ValueError(f"verdad tiene {len(verdad)} valores y prediccion {len(prediccion)}.")
+    if not etiquetas:
+        raise ValueError("etiquetas está vacía.")
+    posicion = {}
+    for i, e in enumerate(etiquetas):
+        if e in posicion:
+            raise ValueError(f"etiquetas repite el valor {e!r}.")
+        posicion[e] = i
+    M = np.zeros((len(etiquetas), len(etiquetas)), dtype=np.int64)
+    for v, p in zip(verdad, prediccion):
+        if v not in posicion:
+            raise ValueError(f"El valor {v!r} de verdad no está en etiquetas {etiquetas}.")
+        if p not in posicion:
+            raise ValueError(f"El valor {p!r} de prediccion no está en etiquetas {etiquetas}.")
+        M[posicion[v], posicion[p]] += 1
+    return M

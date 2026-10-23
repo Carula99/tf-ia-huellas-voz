@@ -80,6 +80,7 @@ CLAVES_OBLIGATORIAS: tuple[str, ...] = (
     "huellas.kmeans.tol",
     "huellas.umbral.criterio",
     "huellas.umbral.far_max_val",
+    "huellas.umbral.piso_dispersion",
     "voz.frecuencia_muestreo",
     "voz.comandos",
     "voz.clase_rechazo",
