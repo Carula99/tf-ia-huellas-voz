@@ -1,7 +1,7 @@
 
 # Contrato · H2 · Preprocesamiento de huellas
 
-**Versión 1.1 · 22/10/2026** (la 1 es del mismo día). **Cambio en la 1.1:** se suman a la sección 7 las respuestas a las preguntas del chat que escribe los tests, lecturas del contrato que confirmó Santiago. Ningún criterio cambia de umbral. Se anota en el Documento 2 junto con los tests.
+**Versión 1.2 · 22/10/2026** (la 1 y la 1.1 son del mismo día). **Cambio en la 1.2:** la matriz de la ventana gira por `a_v = ((angulo + π/2) mod π) − π/2`, el menor de los dos giros que dejan θ∞ horizontal, en lugar de girar por `angulo`. Con `angulo` en `[0, π)`, una variante con `rot_grados` positivo tiene θ∞ cerca de 180° y su ventana salía girada 180°, cabeza abajo; lo encontró el chat de tests (5.3 y 5.7 se contradecían). Cambian la sección 0, la regla 8, 5.3 (con un criterio nuevo: los deltas quedan abajo) y la sección 7. **Cambio en la 1.1:** se suman a la sección 7 las respuestas a las preguntas del chat que escribe los tests, lecturas del contrato que confirmó Santiago. Ningún criterio cambia de umbral. Se anota en el Documento 2 junto con los tests.
 
 Es lo que verifica `tests/test_h2.py`. Los tests se escriben en otro chat solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml` y `src/config.cargar_config`) y de H1 (convenciones de la sección 0, `generar_base`, `sortear_parametros`, `aplicar_variante` y la receta de la sección 4). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
@@ -16,11 +16,12 @@ Es lo que verifica `tests/test_h2.py`. Los tests se escriben en otro chat solo a
 
 - Las de la sección 0 del contrato de H1: imágenes `uint8` de 2 dimensiones con crestas oscuras sobre fondo claro, coordenadas `(x, y)` con `imagen[i, j]` en `(x, y) = (j, i)`, orientación de la cresta en `[0, π)` medida desde el eje x hacia el eje y, transformación afín de una variante y período medido.
 - **Ventana:** `(alto, ancho) = huellas.ventana_px = (250, 250)`, con centro `c_w = ((ancho − 1)/2, (alto − 1)/2) = (124.5, 124.5)`.
-- **Matriz de la ventana:** con `a = angulo` y `(x_r, y_r) = punto_referencia`,
+- **Giro de la ventana:** `a_v = ((angulo + π/2) mod π) − π/2`, en `[−π/2, π/2)`. Hay dos giros que dejan horizontal la orientación `angulo` y difieren en 180°; `a_v` es el más chico, así la huella no queda cabeza abajo. Supone que la huella llega a menos de ±90° de derecha (en el dataset llega a ±15°).
+- **Matriz de la ventana:** con `a = a_v` y `(x_r, y_r) = punto_referencia`,
 
   `M = [[cos a, sen a, t_x], [−sen a, cos a, t_y]]`, con `(t_x, t_y)` tal que `M·(x_r, y_r, 1) = c_w`.
 
-  Es `cv2.getRotationMatrix2D((x_r, y_r), grados(a), 1.0)` con otra traslación: rotación y traslación, sin escala. La ventana es `cv2.warpAffine(entrada, M, (ancho, alto))`: el píxel `(x_w, y_w)` de la ventana viene del punto `M⁻¹·(x_w, y_w)` de la entrada. Una orientación θ de la entrada queda como θ − a en la ventana, así que la orientación `angulo` queda horizontal.
+  Es `cv2.getRotationMatrix2D((x_r, y_r), grados(a), 1.0)` con otra traslación: rotación y traslación, sin escala. La ventana es `cv2.warpAffine(entrada, M, (ancho, alto))`: el píxel `(x_w, y_w)` de la ventana viene del punto `M⁻¹·(x_w, y_w)` de la entrada. Una orientación θ de la entrada queda como θ − a_v en la ventana, que mod π es θ − `angulo`, así que la orientación `angulo` queda horizontal.
 - **θ∞ y el ángulo real:** con la convención de H1, girar la imagen α en sentido antihorario (`rot_grados = α`) le resta α a toda orientación. Las bases de presilla, verticilo y arco en tienda tienen θ∞ = 0, y el campo del arco es simétrico, con orientación media ≈ 0. Por eso **el ángulo real de una variante es −`rot_grados`**.
 - **Error de ángulo** de una variante, en grados: `e = ((grados(angulo) + rot_grados + 90) mod 180) − 90`, en `[−90, 90)`.
 - **Punto de referencia real:** `Variante.punto_referencia` (es el `ref_x, ref_y` de `metadatos.csv`): el núcleo, el punto medio de los dos núcleos o `None` en el arco.
@@ -91,7 +92,7 @@ def generar_lamina(cfg: dict, salida: str | os.PathLike | None = None) -> Path:
    - Ninguno → `metodo = "curvatura"`, `punto_referencia` = el centro de la zona de máxima curvatura de las crestas (punto de referencia de FingerCode, Jain et al., 2000), lejos del borde de la máscara.
    - `nucleos` son los ajustados (vacío con `"curvatura"`). `angulo` = θ∞ mod π; sin núcleos, el ajuste se reduce al promedio circular (ángulo doble) del campo en la máscara, ponderado por la coherencia.
    - Todo se calcula sobre la imagen completa, antes de recortar.
-8. **Ventana:** `cv2.warpAffine` con `matriz`, sin reescalar; lo que cae fuera de la entrada es fondo y queda fuera de la máscara. La máscara pasa con vecino más cercano. `orientacion` es el campo de la entrada llevado a la ventana (θ − `angulo`).
+8. **Ventana:** `cv2.warpAffine` con `matriz`, sin reescalar; lo que cae fuera de la entrada es fondo y queda fuera de la máscara. La máscara pasa con vecino más cercano. `orientacion` es el campo de la entrada llevado a la ventana (θ − a_v, que mod π es θ − `angulo`).
 9. **Realce:** CLAHE (`clahe_limite`, `clahe_grilla`) y filtrado de Gabor sintonizado píxel a píxel con `orientacion` y con la frecuencia de las crestas (Hong, Wan y Jain, 1998), calculado con margen para que el borde de la ventana no deje artefactos. `realzada` va de 0 a 255 con las crestas oscuras y vale 255 fuera de `mascara`.
 10. **Binarización y esqueleto:** `binaria` son las crestas dentro de `mascara`; `esqueleto`, el adelgazamiento de `binaria` hasta 1 px, sin bloques de 2 × 2.
 11. Determinista: la misma entrada da exactamente las mismas salidas.
@@ -123,7 +124,8 @@ Los criterios 5.4 a 5.6 se miden sobre la **muestra**: las entradas de `plan_dat
 
 ### 5.3 Ventana y matriz (en toda la muestra)
 
-- `matriz` es una rotación más una traslación: su parte 2 × 2 es `[[cos a, sen a], [−sen a, cos a]]` con `a = angulo` (tolerancia 1e-9), con determinante 1, y `matriz · (x_r, y_r, 1) = (124.5, 124.5)` (tolerancia 1e-6).
+- `matriz` es una rotación más una traslación: su parte 2 × 2 es `[[cos a, sen a], [−sen a, cos a]]` con `a = a_v = ((angulo + π/2) mod π) − π/2` (sección 0; tolerancia 1e-9), con determinante 1, y `matriz · (x_r, y_r, 1) = (124.5, 124.5)` (tolerancia 1e-6).
+- *(1.2)* La ventana sale derecha: en las variantes de presilla, verticilo y arco en tienda, cada delta real (`variante.singularidades.deltas`) llevado con `matriz` queda debajo del centro de la ventana (`y_w > 124.5`), en todas.
 - `metodo = "nucleo"` ⇒ `nucleos` tiene 1 punto y es `punto_referencia`; `"nucleos"` ⇒ 2 puntos, cuyo punto medio es `punto_referencia`; `"curvatura"` ⇒ `nucleos` vacío (tolerancia 1e-6).
 - El centro de la ventana está dentro de la huella: `mascara[124:126, 124:126]` vale `True` en los 4 píxeles.
 - `mascara` coincide con la máscara real en la ventana: IoU ≥ 0,90 dentro de la entrada, en cada variante.
@@ -189,3 +191,7 @@ Los criterios 5.4 a 5.6 se miden sobre la **muestra**: las entradas de `plan_dat
 - **5.3** se mide sobre las 156 variantes, sin las bases.
 - **5.7:** la orientación y la máscara de la base son las de `preprocesar(base.imagen)`; el disco es `(x − 124,5)² + (y − 124,5)² ≤ 80²`, y el punto real es `variante.punto_referencia`.
 - **5.8:** `generar_lamina` se llama con el `cfg` real y `salida = tmp_path / "lamina_h2.png"`, y la ruta que devuelve es ese mismo archivo (`Path(resultado).resolve() == salida.resolve()`).
+
+### Sumadas en la versión 1.2
+
+- **Ventana derecha (5.3 y 5.7):** en la 1.1 la matriz giraba por `angulo`, en `[0, π)`. Una variante con `rot_grados = +12` tiene ángulo real −12°, o sea `angulo` ≈ 168°, y girar 168° es el giro correcto más 180°: la ventana salía cabeza abajo, con el delta arriba del núcleo. Con un oráculo, 5.7 daba cos 2Δθ ≈ 0,70 contra la base, que sale derecha. En la 1.2 la matriz gira por `a_v` (sección 0). `angulo` sigue siendo θ∞ mod π en `[0, π)`, así que 5.5 y la sección 2 no cambian, y como θ − a_v es θ − `angulo` mod π, θ_v y todo 5.6 quedan igual. Verificado con el prototipo: los 340 deltas reales de las 255 variantes con núcleo quedan debajo del centro de la ventana y 5.7 da cos 2Δθ ≥ 0,9995.
