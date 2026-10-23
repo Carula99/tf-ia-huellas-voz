@@ -1,0 +1,28 @@
+Prototipo de H2 (22/10/2026) · no es el código final
+
+Sirvió para fijar umbrales alcanzables en docs/contratos/h2_preprocesamiento.md, como el
+prototipo de H1. Se corrió en la nube de Claude con Python 3.13, NumPy 2.5.3, SciPy 1.18.1,
+OpenCV 5.0.0 y scikit-image 0.26.0, sobre el dataset de v0.1.2-huellas-datos regenerado en
+memoria (gen_cache.py, que importa src/ del repo).
+
+- proto_h2.py: piezas comunes (tensor de estructura, índice de Poincaré, anillo, Gabor).
+- ajuste_sm2.py: ajuste de Sherlock y Monro (θ∞, núcleos acotados, deltas libres) con
+  scipy.optimize.least_squares.
+- proto_h2c.py: el pipeline completo que se midió (segmentación por energía pasa-altos,
+  Poincaré fino, ajuste, respaldo de curvatura por centroide, ventana, CLAHE, Gabor,
+  esqueleto de Lee).
+- barrido_anillo.py y anillo_5_10.txt: el estimador del anillo (decisión 18) con distintos
+  radios, con cortes de 5 a 10 %.
+- verif_contrato.py y verif_5_10.txt: los criterios del contrato leídos al pie de la letra.
+- lamina_proto.py y h2_proto.png: lámina del prototipo.
+
+Para la implementación: la orientación sale de arctan2 en float32 y "% np.pi" puede dar
+exactamente π en float32 (4 de 300 imágenes); hay que hacer el módulo en float64 y pasar π a 0,
+como _a_cero_pi de H1.
+
+Corrección del 22/10 a la noche (contrato 1.2): la ventana giraba por el ángulo en [0, π) y
+las variantes con rotación positiva salían cabeza abajo (137 de 255 ventanas con núcleo).
+Lo encontró el chat de tests. Ahora matriz_ventana (proto_h2.py) gira por
+a_v = ((angulo + π/2) mod π) − π/2. verif_12.txt tiene los criterios del contrato 1.2 con
+la zona de comparación de la 1.1, y verif_derecha.py comprueba que los 340 deltas reales
+quedan debajo del centro de la ventana. h2_proto.png es la lámina corregida.

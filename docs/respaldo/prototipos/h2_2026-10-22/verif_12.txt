@@ -1,0 +1,89 @@
+== muestra: 156 variantes, preprocesar 19.6 s
+  ang5_arco              1.000 (0 fallan de 9)
+  ang5_arco_tienda       1.000 (0 fallan de 49)
+  ang5_corte             1.000 (0 fallan de 38)
+  ang5_presilla          1.000 (0 fallan de 49)
+  ang5_verticilo         1.000 (0 fallan de 49)
+  arco_ok                1.000 (0 fallan de 9)
+  centro_en_mascara      1.000 (0 fallan de 156)
+  esq_en_binaria         1.000 (0 fallan de 156)
+  formato                0.994 (1 fallan de 156)
+  fuera255               1.000 (0 fallan de 156)
+  metodo_arco            1.000 (0 fallan de 9)
+  metodo_arco_tienda     1.000 (0 fallan de 49)
+  metodo_presilla        1.000 (0 fallan de 49)
+  metodo_verticilo       1.000 (0 fallan de 49)
+  nucleos8_arco_tienda   1.000 (0 fallan de 49)
+  nucleos8_presilla      1.000 (0 fallan de 49)
+  nucleos8_verticilo     1.000 (0 fallan de 49)
+  ref8_arco_tienda       1.000 (0 fallan de 49)
+  ref8_presilla          1.000 (0 fallan de 49)
+  ref8_verticilo         1.000 (0 fallan de 49)
+  peor ang_arco           1.187
+  peor ang_arco_tienda    1.241
+  peor ang_presilla       1.102
+  peor ang_verticilo      0.8
+  peor bloques22          0
+  peor dens               0.1208
+  peor matriz_centro      0
+  peor matriz_rot         0
+  peor periodo            0.4735
+  peor ref_arco_tienda    3.683
+  peor ref_presilla       2.143
+  peor ref_verticilo      2.058
+  mínimo campo            0.9865
+  mínimo contraste        135.3
+  mínimo crestas          0.9587
+  mínimo dens             0.09229
+  mínimo iou              0.9771
+== dataset completo: 300 variantes, preprocesar 36.5 s
+  ang5_arco              1.000 (0 fallan de 45)
+  ang5_arco_tienda       1.000 (0 fallan de 85)
+  ang5_corte             1.000 (0 fallan de 91)
+  ang5_presilla          1.000 (0 fallan de 85)
+  ang5_verticilo         1.000 (0 fallan de 85)
+  arco_ok                1.000 (0 fallan de 45)
+  centro_en_mascara      1.000 (0 fallan de 300)
+  esq_en_binaria         1.000 (0 fallan de 300)
+  formato                0.987 (4 fallan de 300)
+  fuera255               1.000 (0 fallan de 300)
+  metodo_arco            1.000 (0 fallan de 45)
+  metodo_arco_tienda     1.000 (0 fallan de 85)
+  metodo_presilla        1.000 (0 fallan de 85)
+  metodo_verticilo       1.000 (0 fallan de 85)
+  nucleos8_arco_tienda   1.000 (0 fallan de 85)
+  nucleos8_presilla      1.000 (0 fallan de 85)
+  nucleos8_verticilo     1.000 (0 fallan de 85)
+  ref8_arco_tienda       1.000 (0 fallan de 85)
+  ref8_presilla          1.000 (0 fallan de 85)
+  ref8_verticilo         1.000 (0 fallan de 85)
+  peor ang_arco           1.977
+  peor ang_arco_tienda    1.335
+  peor ang_presilla       1.102
+  peor ang_verticilo      0.9496
+  peor bloques22          0
+  peor dens               0.1208
+  peor matriz_centro      0
+  peor matriz_rot         0
+  peor periodo            0.5335
+  peor ref_arco_tienda    5.672
+  peor ref_presilla       3.469
+  peor ref_verticilo      2.058
+  mínimo campo            0.9835
+  mínimo contraste        134.6
+  mínimo crestas          0.9587
+  mínimo dens             0.09229
+  mínimo iou              0.9771
+arco ≤ 30 px: 0.978
+5.7 presilla         0: cos 0.9997 err ang 0.42 ref 0.44
+5.7 presilla        90: cos 0.9998 err ang 0.33 ref 0.49
+5.7 presilla       180: cos 0.9998 err ang 0.31 ref 0.61
+5.7 presilla       270: cos 0.9997 err ang 0.31 ref 0.41
+5.7 verticilo        0: cos 0.9999 err ang 0.04 ref 1.18
+5.7 verticilo       90: cos 0.9999 err ang 0.20 ref 1.32
+5.7 verticilo      180: cos 0.9997 err ang 0.07 ref 1.14
+5.7 verticilo      270: cos 0.9996 err ang 0.10 ref 1.48
+5.7 arco_tienda      0: cos 0.9999 err ang 0.33 ref 2.58
+5.7 arco_tienda     90: cos 0.9998 err ang 0.40 ref 2.46
+5.7 arco_tienda    180: cos 0.9995 err ang 0.19 ref 2.82
+5.7 arco_tienda    270: cos 0.9996 err ang 0.24 ref 2.51

@@ -1,0 +1,17 @@
+Fuentes de los dos Word del Trabajo Final (generados con la librería docx de Node.js).
+
+Contenido
+- lib.js: estilos y piezas comunes (títulos, tablas, fichas, figuras).
+- doc2_v069.js: Documento 2, Documentación del desarrollo (versión 0.6.9, 23/10/2026: ficha de
+  V1, tabla 3, decisiones 61 a 74 y prompts P21 y P22). Es la versión actual; doc2_v068.js y las
+  anteriores (v067 a v06) quedan como historial.
+- plan_v32.js: Documento 1, Plan de desarrollo (versión 0.3.2, 16/10/2026).
+- img/ y mmd/: figuras que usan los dos documentos.
+
+Para regenerarlos (con Node.js 18 o más nuevo, desde esta carpeta):
+    npm install docx@9.7.1
+    node doc2_v069.js "TF IA - 2 Documentación del desarrollo.docx"
+    node plan_v32.js "TF IA - 1 Plan de desarrollo v0.3.2.docx"
+
+Para una versión nueva se copia el .js con otro número (por ejemplo doc2_v07.js), se editan
+el contenido y el número de versión, y se vuelve a generar el Word.

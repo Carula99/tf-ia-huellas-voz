@@ -1,0 +1,57 @@
+flowchart TD
+    subgraph F0["Fase 0 · Setup y especificación"]
+        direction LR
+        A1["Objetivos, REAS y<br/>tipo de agente"]
+        A2["Repo privado + estructura<br/>venv + config.yaml"]
+        A3["Pedido de audios<br/>por WhatsApp"]
+        A1 --> A2 --> A3
+    end
+
+    subgraph HU["Carril huellas"]
+        direction TB
+        H1["<b>H1 · Generador + dataset</b><br/>presilla · verticilo · arco en tienda<br/>3 × 40 variantes + 60 intrusos"]
+        H2["<b>H2 · Preprocesamiento</b><br/>punto de referencia (núcleo)<br/>ventana 250×250 · CLAHE · Gabor · esqueleto"]
+        H3["<b>H3 · Características + PCA propio</b><br/>orientación · Gabor · minucias · Hu<br/>bloques ponderados 1/√d_b"]
+        H4["<b>H4 · K-means propio k=3 + umbral</b><br/>validado contra scikit-learn<br/>umbral en val · FAR y FRR en test"]
+        H1 --> H2 --> H3 --> H4
+    end
+
+    subgraph VO["Carril voz"]
+        direction TB
+        V1["<b>V1 · Dataset de voz</b><br/>WhatsApp + mic de la demo<br/>+ voces TTS + clase otro"]
+        V2["<b>V2 · Preprocesamiento</b><br/>WAV 16 kHz · recorte · pasabanda<br/>RMS · aumento solo en train"]
+        V3["<b>V3 · Características + PCA propio</b><br/>MFCC + Δ con CMN en 5 tramos<br/>energía · ZCR · duración"]
+        V4["<b>V4 · K-NN propio + rechazo</b><br/>voto 1/(d+ε) · K con persona afuera<br/>clase otro + umbral"]
+        V1 --> V2 --> V3 --> V4
+    end
+
+    subgraph F5["Fase 5 · Integración"]
+        direction LR
+        I1["Agente: máquina de estados<br/>Reconocer · Identificar · Salir"]
+        I2["App CustomTkinter<br/>push-to-talk + visor de huella y PCA"]
+        I1 --> I2
+    end
+
+    subgraph F6["Fase 6 · Cierre"]
+        R1["Informe PDF + bitácora de IA<br/>ensayo de la demo · semana del 10/11"]
+    end
+
+    F0 --> HU
+    F0 --> VO
+    HU --> F5
+    VO --> F5
+    F5 --> F6
+
+    classDef setup fill:#F3F0FA,stroke:#6B5BA8,color:#1E1A33
+    classDef hue fill:#E8F0FB,stroke:#2F6DB5,color:#132744
+    classDef voz fill:#E8F5EC,stroke:#2E7D4F,color:#12301E
+    classDef integ fill:#FFF3E3,stroke:#C07A12,color:#3A2405
+    class A1,A2,A3 setup
+    class H1,H2,H3,H4 hue
+    class V1,V2,V3,V4 voz
+    class I1,I2,R1 integ
+    style F0 fill:#FBFAFE,stroke:#6B5BA8
+    style HU fill:#F6F9FE,stroke:#2F6DB5
+    style VO fill:#F5FBF7,stroke:#2E7D4F
+    style F5 fill:#FFFBF4,stroke:#C07A12
+    style F6 fill:#FFFBF4,stroke:#C07A12

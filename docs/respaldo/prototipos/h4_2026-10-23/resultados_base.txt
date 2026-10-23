@@ -1,0 +1,18 @@
+K-means propio: inercia 31.4493, iter 2, pureza 1.000, uno a uno True, mapa {0: 3, 1: 2, 2: 1}
+centroides = medias por identidad: 0.0
+init=C: dif centroides 1.3877787807814457e-16 dif inercia 0.0
+k-means++: dif centroides emparejados 1.3877787807814457e-16 inercia rel 0.0
+200 arranques sueltos: inercias distintas [31.449308] fracción en el óptimo 1.0
+train aut: max 1.089 p95 1.002 media 0.628 |  | ident ok 1.000
+val   aut: max 1.022 p95 0.933 media 0.663 | intr: min 1.129 p5 1.284 media 1.937 | ident ok 1.000
+test  aut: max 1.142 p95 1.061 media 0.686 | intr: min 1.093 p5 1.209 media 2.083 | ident ok 1.000
+EER val: τ=1.0223 FAR 0.000 FRR 0.000; τ empatados: [1.0223]
+test: {'far': 0.0, 'frr': 0.08333333333333333, 'rechazo_aut': 0.08333333333333333}
+[[ 7  0  0  1]
+ [ 0  7  0  1]
+ [ 0  0  8  0]
+ [ 0  0  0 90]]
+autorizadas de test más lejanas: [('test/id1_v036.png', 1.142), ('test/id2_v040.png', 1.092), ('test/id3_v040.png', 0.883), ('test/id3_v033.png', 0.88), ('test/id2_v038.png', 0.876)]
+intrusos de val más cercanos: [('val/intruso21_v2.png', 'presilla', 1, 1.129), ('val/intruso15_v3.png', 'arco_tienda', 3, 1.167), ('val/intruso27_v2.png', 'arco_tienda', 3, 1.175), ('val/intruso25_v3.png', 'presilla', 1, 1.196), ('val/intruso05_v1.png', 'presilla', 1, 1.269), ('val/intruso27_v3.png', 'arco_tienda', 3, 1.301)]
+intrusos de test más cercanos: [('test/intruso31_v1.png', 'arco_tienda', 3, 1.093), ('test/intruso49_v2.png', 'presilla', 1, 1.142), ('test/intruso49_v1.png', 'presilla', 1, 1.149), ('test/intruso49_v3.png', 'presilla', 1, 1.16), ('test/intruso31_v2.png', 'arco_tienda', 3, 1.179), ('test/intruso33_v2.png', 'presilla', 1, 1.246)]
+autorizadas de val más lejanas: [('val/id2_v026.png', 1.022), ('val/id1_v030.png', 0.937), ('val/id2_v027.png', 0.912), ('val/id2_v032.png', 0.811), ('val/id3_v032.png', 0.806)]

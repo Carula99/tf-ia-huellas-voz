@@ -1,0 +1,80 @@
+muestra ampliada: 300 autorizadas, 300 intrusos
+
+Separabilidad (EER en el propio conjunto y AUC):
+  euclidea   val EER 0.000 AUC 1.0000 | ampliada EER 0.007 AUC 0.9997 | test EER 0.022 AUC 0.9991
+  norm_rms   val EER 0.000 AUC 1.0000 | ampliada EER 0.003 AUC 0.9998 | test EER 0.011 AUC 0.9995
+  norm_media val EER 0.000 AUC 1.0000 | ampliada EER 0.003 AUC 0.9998 | test EER 0.011 AUC 0.9995
+  norm_max   val EER 0.000 AUC 1.0000 | ampliada EER 0.003 AUC 0.9999 | test EER 0.011 AUC 0.9995
+  pca2       val EER 0.083 AUC 0.9704 | ampliada EER 0.107 AUC 0.9635 | test EER 0.167 AUC 0.9176
+  pca3       val EER 0.233 AUC 0.7940 | ampliada EER 0.210 AUC 0.8797 | test EER 0.250 AUC 0.8380
+  pca5       val EER 0.233 AUC 0.8787 | ampliada EER 0.173 AUC 0.9172 | test EER 0.250 AUC 0.8690
+  pca10      val EER 0.125 AUC 0.9681 | ampliada EER 0.103 AUC 0.9706 | test EER 0.144 AUC 0.9486
+  pca20      val EER 0.044 AUC 0.9926 | ampliada EER 0.060 AUC 0.9895 | test EER 0.083 AUC 0.9792
+  pca40      val EER 0.000 AUC 1.0000 | ampliada EER 0.023 AUC 0.9985 | test EER 0.056 AUC 0.9954
+  pca71      val EER 0.000 AUC 1.0000 | ampliada EER 0.010 AUC 0.9993 | test EER 0.044 AUC 0.9958
+  maha2      val EER 0.083 AUC 0.9764 | ampliada EER 0.093 AUC 0.9686 | test EER 0.167 AUC 0.9176
+  maha5      val EER 0.011 AUC 0.9995 | ampliada EER 0.043 AUC 0.9939 | test EER 0.067 AUC 0.9801
+  maha10     val EER 0.011 AUC 0.9995 | ampliada EER 0.020 AUC 0.9981 | test EER 0.042 AUC 0.9898
+  maha20     val EER 0.000 AUC 1.0000 | ampliada EER 0.003 AUC 0.9998 | test EER 0.000 AUC 1.0000
+
+τ en val → ampliada (FRR, FAR, FAR mismo tipo) y test (FRR, FAR):
+  euclidea   eer_bajo  τ=  1.022 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.030 FAR 0.000 (mismo tipo 0.000) | test FRR 0.083 FAR 0.000
+  euclidea   eer_medio τ=  1.076 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.023 FAR 0.003 (mismo tipo 0.005) | test FRR 0.083 FAR 0.000
+  euclidea   far2      τ=  1.167 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.003 FAR 0.013 (mismo tipo 0.021) | test FRR 0.000 FAR 0.044
+  euclidea   far5      τ=  1.269 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.003 FAR 0.057 (mismo tipo 0.088) | test FRR 0.000 FAR 0.067
+  norm_rms   eer_bajo  τ=  1.421 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.073 FAR 0.000 (mismo tipo 0.000) | test FRR 0.167 FAR 0.000
+  norm_rms   eer_medio τ=  1.561 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.023 FAR 0.000 (mismo tipo 0.000) | test FRR 0.042 FAR 0.000
+  norm_rms   far2      τ=  1.802 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.003 FAR 0.017 (mismo tipo 0.028) | test FRR 0.000 FAR 0.033
+  norm_rms   far5      τ=  1.981 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.000 FAR 0.060 (mismo tipo 0.100) | test FRR 0.000 FAR 0.078
+  norm_media eer_bajo  τ=  1.507 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.070 FAR 0.000 (mismo tipo 0.000) | test FRR 0.167 FAR 0.000
+  norm_media eer_medio τ=  1.662 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.023 FAR 0.000 (mismo tipo 0.000) | test FRR 0.042 FAR 0.000
+  norm_media far2      τ=  1.924 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.003 FAR 0.020 (mismo tipo 0.033) | test FRR 0.000 FAR 0.033
+  norm_media far5      τ=  2.083 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.000 FAR 0.060 (mismo tipo 0.100) | test FRR 0.000 FAR 0.078
+  norm_max   eer_bajo  τ=  0.939 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.047 FAR 0.000 (mismo tipo 0.000) | test FRR 0.083 FAR 0.000
+  norm_max   eer_medio τ=  0.997 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.027 FAR 0.000 (mismo tipo 0.000) | test FRR 0.083 FAR 0.000
+  norm_max   far2      τ=  1.116 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.003 FAR 0.010 (mismo tipo 0.016) | test FRR 0.000 FAR 0.033
+  norm_max   far5      τ=  1.246 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.000 FAR 0.060 (mismo tipo 0.098) | test FRR 0.000 FAR 0.089
+  pca2       eer_bajo  τ=  0.148 | val FRR 0.083 FAR 0.078 | ampliada FRR 0.143 FAR 0.073 (mismo tipo 0.108) | test FRR 0.208 FAR 0.144
+  pca2       eer_medio τ=  0.155 | val FRR 0.083 FAR 0.078 | ampliada FRR 0.130 FAR 0.077 (mismo tipo 0.113) | test FRR 0.208 FAR 0.156
+  pca2       far2      τ=  0.094 | val FRR 0.458 FAR 0.011 | ampliada FRR 0.367 FAR 0.023 (mismo tipo 0.036) | test FRR 0.542 FAR 0.067
+  pca2       far5      τ=  0.116 | val FRR 0.292 FAR 0.044 | ampliada FRR 0.240 FAR 0.053 (mismo tipo 0.077) | test FRR 0.292 FAR 0.133
+  pca3       eer_bajo  τ=  0.458 | val FRR 0.250 FAR 0.233 | ampliada FRR 0.200 FAR 0.223 (mismo tipo 0.304) | test FRR 0.250 FAR 0.267
+  pca3       eer_medio τ=  0.461 | val FRR 0.250 FAR 0.233 | ampliada FRR 0.197 FAR 0.233 (mismo tipo 0.314) | test FRR 0.250 FAR 0.267
+  pca3       far2      τ=  0.133 | val FRR 0.750 FAR 0.011 | ampliada FRR 0.737 FAR 0.000 (mismo tipo 0.000) | test FRR 0.833 FAR 0.000
+  pca3       far5      τ=  0.250 | val FRR 0.583 FAR 0.044 | ampliada FRR 0.453 FAR 0.017 (mismo tipo 0.026) | test FRR 0.542 FAR 0.011
+  pca5       eer_bajo  τ=  0.630 | val FRR 0.250 FAR 0.233 | ampliada FRR 0.173 FAR 0.177 (mismo tipo 0.273) | test FRR 0.250 FAR 0.233
+  pca5       eer_medio τ=  0.631 | val FRR 0.250 FAR 0.233 | ampliada FRR 0.173 FAR 0.177 (mismo tipo 0.273) | test FRR 0.250 FAR 0.233
+  pca5       far2      τ=  0.397 | val FRR 0.583 FAR 0.011 | ampliada FRR 0.457 FAR 0.023 (mismo tipo 0.036) | test FRR 0.417 FAR 0.011
+  pca5       far5      τ=  0.508 | val FRR 0.292 FAR 0.044 | ampliada FRR 0.307 FAR 0.077 (mismo tipo 0.119) | test FRR 0.333 FAR 0.100
+  pca10      eer_bajo  τ=  0.804 | val FRR 0.125 FAR 0.122 | ampliada FRR 0.103 FAR 0.097 (mismo tipo 0.149) | test FRR 0.167 FAR 0.133
+  pca10      eer_medio τ=  0.806 | val FRR 0.125 FAR 0.122 | ampliada FRR 0.103 FAR 0.097 (mismo tipo 0.149) | test FRR 0.167 FAR 0.144
+  pca10      far2      τ=  0.629 | val FRR 0.292 FAR 0.011 | ampliada FRR 0.257 FAR 0.020 (mismo tipo 0.031) | test FRR 0.292 FAR 0.011
+  pca10      far5      τ=  0.711 | val FRR 0.208 FAR 0.044 | ampliada FRR 0.197 FAR 0.040 (mismo tipo 0.062) | test FRR 0.292 FAR 0.089
+  pca20      eer_bajo  τ=  0.909 | val FRR 0.042 FAR 0.044 | ampliada FRR 0.067 FAR 0.057 (mismo tipo 0.088) | test FRR 0.083 FAR 0.078
+  pca20      eer_medio τ=  0.926 | val FRR 0.042 FAR 0.044 | ampliada FRR 0.050 FAR 0.063 (mismo tipo 0.098) | test FRR 0.083 FAR 0.078
+  pca20      far2      τ=  0.822 | val FRR 0.125 FAR 0.011 | ampliada FRR 0.130 FAR 0.027 (mismo tipo 0.041) | test FRR 0.250 FAR 0.011
+  pca20      far5      τ=  0.947 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.047 FAR 0.067 (mismo tipo 0.103) | test FRR 0.083 FAR 0.078
+  pca40      eer_bajo  τ=  0.980 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.040 FAR 0.003 (mismo tipo 0.005) | test FRR 0.083 FAR 0.011
+  pca40      eer_medio τ=  0.993 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.040 FAR 0.003 (mismo tipo 0.005) | test FRR 0.083 FAR 0.022
+  pca40      far2      τ=  1.007 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.033 FAR 0.007 (mismo tipo 0.010) | test FRR 0.083 FAR 0.022
+  pca40      far5      τ=  1.115 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.003 FAR 0.060 (mismo tipo 0.093) | test FRR 0.000 FAR 0.056
+  pca71      eer_bajo  τ=  1.010 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.037 FAR 0.003 (mismo tipo 0.005) | test FRR 0.083 FAR 0.000
+  pca71      eer_medio τ=  1.042 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.027 FAR 0.007 (mismo tipo 0.010) | test FRR 0.083 FAR 0.011
+  pca71      far2      τ=  1.084 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.013 FAR 0.010 (mismo tipo 0.015) | test FRR 0.083 FAR 0.033
+  pca71      far5      τ=  1.192 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.003 FAR 0.060 (mismo tipo 0.093) | test FRR 0.000 FAR 0.056
+  maha2      eer_bajo  τ=  1.708 | val FRR 0.083 FAR 0.078 | ampliada FRR 0.147 FAR 0.070 (mismo tipo 0.098) | test FRR 0.208 FAR 0.133
+  maha2      eer_medio τ=  1.748 | val FRR 0.083 FAR 0.078 | ampliada FRR 0.137 FAR 0.070 (mismo tipo 0.098) | test FRR 0.208 FAR 0.156
+  maha2      far2      τ=  1.137 | val FRR 0.500 FAR 0.011 | ampliada FRR 0.363 FAR 0.017 (mismo tipo 0.025) | test FRR 0.458 FAR 0.056
+  maha2      far5      τ=  1.636 | val FRR 0.125 FAR 0.044 | ampliada FRR 0.157 FAR 0.070 (mismo tipo 0.098) | test FRR 0.208 FAR 0.133
+  maha5      eer_bajo  τ=  3.143 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.103 FAR 0.017 (mismo tipo 0.025) | test FRR 0.125 FAR 0.044
+  maha5      eer_medio τ=  3.230 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.083 FAR 0.020 (mismo tipo 0.030) | test FRR 0.083 FAR 0.056
+  maha5      far2      τ=  3.318 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.083 FAR 0.023 (mismo tipo 0.035) | test FRR 0.083 FAR 0.067
+  maha5      far5      τ=  3.723 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.043 FAR 0.037 (mismo tipo 0.055) | test FRR 0.042 FAR 0.078
+  maha10     eer_bajo  τ=  4.298 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.083 FAR 0.003 (mismo tipo 0.006) | test FRR 0.125 FAR 0.022
+  maha10     eer_medio τ=  4.401 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.067 FAR 0.003 (mismo tipo 0.006) | test FRR 0.042 FAR 0.033
+  maha10     far2      τ=  4.504 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.060 FAR 0.003 (mismo tipo 0.006) | test FRR 0.042 FAR 0.033
+  maha10     far5      τ=  5.513 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.017 FAR 0.040 (mismo tipo 0.067) | test FRR 0.042 FAR 0.078
+  maha20     eer_bajo  τ=  6.887 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.100 FAR 0.000 (mismo tipo 0.000) | test FRR 0.125 FAR 0.000
+  maha20     eer_medio τ=  7.059 | val FRR 0.000 FAR 0.000 | ampliada FRR 0.073 FAR 0.000 (mismo tipo 0.000) | test FRR 0.083 FAR 0.000
+  maha20     far2      τ=  9.072 | val FRR 0.000 FAR 0.011 | ampliada FRR 0.003 FAR 0.007 (mismo tipo 0.011) | test FRR 0.000 FAR 0.011
+  maha20     far5      τ= 10.119 | val FRR 0.000 FAR 0.044 | ampliada FRR 0.003 FAR 0.017 (mismo tipo 0.028) | test FRR 0.000 FAR 0.089

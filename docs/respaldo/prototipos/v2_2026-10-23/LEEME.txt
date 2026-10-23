@@ -1,0 +1,31 @@
+PROTOTIPO DE V2 (PREPROCESAMIENTO DE VOZ) · 23/10/2026 · carril de voz
+
+Con estos scripts se midió todo lo de la sección 10 del contrato docs/contratos/v2_preprocesamiento.md.
+Se corrieron en la nube de Claude, no en la notebook.
+
+Archivos de datos (en esta carpeta):
+- dataset_v1.zip: copia de data/voz/dataset (828 clips de V1 y metadatos.csv).
+- repo_src.zip: src/ y config.yaml del repo en el commit ba71feb (V1 ya implementado).
+  Los dos zip usan "\" en las rutas: descomprimir con Python cambiando "\" por "/" (o con unzip,
+  que avisa pero los extrae bien).
+
+Cómo correrlos en la nube:
+1. Descomprimir dataset_v1.zip en una carpeta "ds" al lado de los scripts.
+2. Tener el repo (src/ y config.yaml) en /home/claude/tf-ia-huellas-voz, o cambiar la ruta del
+   principio de proto_a.py.
+3. pip install librosa==1.0.0 (solo para el borrador de características de proto_c.py).
+
+Qué hace cada uno:
+- proto_a.py: recorte limpio sobre los 828 clips, detectando sobre el audio crudo o filtrado
+  (de acá sale que el detector va sin filtrar: con filtro se pierde la "s" de "salir").
+- proto_b.py y proto_b3.py: hasta qué SNR el detector encuentra la palabra entera, por grabación de
+  ruido (cobertura de la palabra y ruido pegado).
+- proto_c.py: funciones del prototipo (V2, aumento con sala, borrador de características de V3 y
+  K-NN de V4) y comparación en val (pocos casos).
+- proto_d.py: la misma comparación con validación cruzada dejando afuera a los hablantes de la
+  notebook de train (6 pliegues): ruido antes o después del recorte, rangos de SNR, sala.
+- proto_d2.py: sala separada (solo EQ, solo eco) y tres semillas con y sin sala.
+- proto_final.py: V2 tal como quedó en el contrato (sin sala, −26 dBFS): validez de las copias,
+  picos y tiempos.
+
+El borrador de características y del K-NN no es V3 ni V4: solo sirvió para comparar variantes.

@@ -1,0 +1,74 @@
+Prototipo de H4 (23/10/2026) · no es el código final
+
+Sirve para fijar el contrato de H4 (docs/contratos/h4_clasificacion.md, versión 1). Se corrió
+en la nube de Claude sobre data/huellas/caracteristicas.npz (H3, tag v0.3-huellas-features,
+commit c1e052c; SHA256 c3233066…3ad154), con Python 3.13, NumPy 2.5.3, SciPy 1.18.1,
+OpenCV 5.0.0 y scikit-learn 1.9.1 (solo como oráculo). Copias en esta carpeta:
+caracteristicas.npz, metadatos.csv y repo_src_c1e052c.zip (src/ y config.yaml del repo).
+
+Archivos
+- proto_h4.py: K-means propio (k-means++ "greedy" como scikit-learn, n_init arranques, Lloyd con
+  parada por movimiento² ≤ tol · media de las varianzas de las columnas), correspondencia
+  cluster → identidad, decisión con τ, FAR, FRR, matriz de confusión 4 × 4 y barrido de τ.
+- medir_base.py: reproduce el adelanto de H4 de H3 y compara el K-means con scikit-learn
+  (resultados_base.txt).
+- muestra_ampliada.py → muestra_ampliada.npz: 600 huellas nuevas solo para el prototipo (no son
+  parte del dataset): variantes 41 a 140 de las identidades 1 a 3 (300) e intrusos 61 a 160
+  (semilla 10000 + i, tipo tipos[(i − 1) mod 4], 3 variantes; 300), con la receta de H1, H2 y
+  H3 del repo y el escalador de train del npz. Tarda 3 minutos con 2 núcleos. Sirve para elegir
+  la regla sin mirar test (test ya se había visto en el adelanto). Las rutas de la nube
+  (/home/claude/h4) están escritas en el archivo: se ajustan al correrlo en otro lado.
+- comparar.py: puntajes (euclídea, normalizada por la dispersión del cluster, PCA con m
+  componentes, Mahalanobis en PCA) y reglas de τ en val, medidos en la muestra ampliada y en test
+  (resultados_comparar.txt). src_pca.py es copia de src/core_ml/pca.py.
+- simular.py: 2000 pares val/test del tamaño del dataset (8 autorizadas por identidad y 30
+  intrusos de 3 variantes en cada uno) sorteados sin repetir de la muestra ampliada; τ se
+  calibra en el val sorteado y se mide en el test sorteado (resultados_simulacion.txt).
+  Uso: python simular.py <puntajes separados por coma> <reglas separadas por coma>.
+- figura_h4.py → h4_proto.png: (a) FAR y FRR en val con la distancia normalizada, (b) distancias
+  de cada grupo contra τ*, (c) probabilidad de cumplir las metas en la simulación.
+- proto_h4c.py: las definiciones exactas del contrato (KMeans, matriz_confusion, correspondencia,
+  dispersiones con piso, puntajes, far_frr, calibrar_umbral con far_max y eer en la mitad del
+  intervalo, decidir y evaluar). verificar_contrato.py mide con ellas los valores de la sección 8
+  del contrato: K-means contra scikit-learn en 10 juegos aleatorios y con max_iter 1 a 3, τ* en
+  el dataset y los tres ejemplos de la calibración.
+
+Elección de Santiago (23/10): distancia normalizada con piso de r_k (0,5 · r̄), criterio far_max
+con far_max_val 0,01 y τ* en la mitad del intervalo (la opción D), y la muestra ampliada solo
+como evidencia del prototipo (no entra en el contrato).
+
+Resultados
+- K-means propio con k = 3, n_init = 15, tol = 1e-4 en las 72 de train: los 3 clusters son
+  exactamente las 3 identidades (pureza 100 %, uno a uno) y los centroides son las medias por
+  identidad. Los 200 arranques sueltos probados llegan al mismo óptimo (inercia 31,4493) en
+  2 iteraciones. Contra sklearn.cluster.KMeans con init = centroides y n_init = 1: centroides
+  1e-16 e inercia igual; con k-means++, los centroides emparejados también.
+- Identificación (centroide más cercano, sin umbral): 100 % en val, en test y en las 300
+  autorizadas de la muestra ampliada, con la distancia euclídea y con la normalizada.
+- El problema del FRR del adelanto es dónde cae τ: en val hay un intervalo entero sin errores
+  (euclídea: autorizada más lejana 1,022 e intruso más cercano 1,129) y el adelanto tomaba el
+  borde de abajo, pegado a las autorizadas. En test, las autorizadas id1_v036 (1,142) e
+  id2_v040 (1,092, reservada para la demo) quedan arriba y el intruso más cercano está en 1,093:
+  con la euclídea ningún τ deja test sin errores.
+- Distancia normalizada: d_k(x) / r_k, con r_k = √(inercia del cluster k / n_k), la distancia
+  RMS de su train a su centroide (0,664, 0,720 y 0,593). Separa mejor que la euclídea: EER en
+  la muestra ampliada 0,3 % contra 0,7 % (AUC 0,9998 contra 0,9997), y en test 1,1 % contra
+  2,2 %. Truncar el PCA (2 a 20 componentes) empeora mucho (EER de 6 % a 21 %); Mahalanobis
+  en 20 componentes separa parecido a la normalizada, pero suma hiperparámetros y en el val
+  real deja un intervalo angosto.
+- Simulación (P de cumplir FRR ≤ 10 % y FAR ≤ 5 % en el test sorteado):
+    A euclídea, borde de abajo del intervalo EER (el adelanto): 85,8 % (P(FRR > 10 %) 11,6 %)
+    B euclídea, mitad del intervalo EER: 94,6 %
+    C normalizada, mitad del intervalo EER: 97,1 %
+    D normalizada, FAR de val ≤ 1 % (ningún intruso de val aceptado), mitad del intervalo: 99,6 %
+  C y D dan el mismo τ cuando val es separable (93 % de los sorteos, y el val real); D gana
+  cuando no lo es, porque el EER deja entrar intrusos para emparejar con el FRR. Con el tope
+  de FAR en 5 % (el valor actual de far_max_val) baja a 94,7 % (P(FAR > 5 %) 5,3 %). Un τ por
+  identidad calibrado en val no mejora (muy pocas autorizadas e intrusos por identidad).
+- Con C o D en el dataset real: τ* = 1,561 (intervalo de val [1,421, 1,702)); test: FRR 4,2 %
+  (1 de 24, id1_v036 en 1,721), FAR 0 %, identificación 100 %; matriz de confusión
+  [[7,0,0,1],[0,8,0,0],[0,0,8,0],[0,0,0,90]]. Muestra ampliada: FRR 2,3 %, FAR 0 % (también
+  con los intrusos del mismo tipo que la identidad a la que se acercan). El intruso de test más
+  cercano es intruso49 (presilla, sus 3 variantes en 1,720 a 1,748, cerca de la identidad 1).
+- Reservadas para la demo, con τ* = 1,561: todas se aceptan; id2_v040 (1,518) e id3_v040
+  (1,487) con poco margen.

@@ -1,0 +1,21 @@
+flowchart TD
+    subgraph R1[" "]
+        direction LR
+        S1["1 · Investigar"] --> S2["2 · Definir entradas,<br/>salidas y criterios"] --> S3["3 · Tests en otro chat<br/>(oráculo scikit-learn)<br/>y congelarlos"]
+    end
+    subgraph R2[" "]
+        direction LR
+        S4["4 · Implementar<br/>en src/"] --> S5{{"5 · ¿Pasan los tests?"}}
+        S5 -- "No: se corrige<br/>el código" --> S4
+        S5 -- "Sí" --> S6["6 · Tag + documentar<br/>+ mostrar el hito"]
+    end
+    R1 --> R2
+
+    classDef paso fill:#E8F0FB,stroke:#2F6DB5,color:#132744
+    classDef test fill:#FFF3E3,stroke:#C07A12,color:#3A2405
+    classDef fin fill:#E8F5EC,stroke:#2E7D4F,color:#12301E
+    class S1,S2,S4 paso
+    class S3,S5 test
+    class S6 fin
+    style R1 fill:#FFFFFF,stroke:#FFFFFF
+    style R2 fill:#FFFFFF,stroke:#FFFFFF

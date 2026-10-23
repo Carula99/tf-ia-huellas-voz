@@ -1,0 +1,82 @@
+PLAN FINAL DEL CARRIL DE VOZ (V2 A V4 Y FASE 5) · 23/10/2026
+Trabajo Final de Inteligencia Artificial I (UNCuyo) · Santiago
+
+Cierra plan_voz_V2_V4_con_Gemini.txt con las respuestas de Gemini, tus tres decisiones y lo que se midió
+con un prototipo sobre los 828 clips de V1. Lo que cambia respecto de ese plan está marcado con [CAMBIA].
+
+======================================================================================================
+1. TUS DECISIONES
+======================================================================================================
+
+- 2 copias aumentadas por clip de train.
+- No se graban audios extra para "otro".
+- Prueba en vivo con tus familiares (gente que nunca grabó) apenas esté lista la cadena completa
+  (V2 → V3 → V4 en la app), antes de la semana del 10/11.
+
+======================================================================================================
+2. CÓMO SE MIDIÓ
+======================================================================================================
+
+Para elegir el aumento de datos hacía falta ver qué pasa al final, en el K-NN. Se armó un borrador de
+V3 y V4 (13 MFCC, Δ, CMN, 5 tramos, K-NN con K = 5) y se probó con validación cruzada dejando afuera a
+los 10 hablantes de la notebook de train (231 comandos y 78 "otro" evaluados), sin ruido y con ruido
+de val sumado a 25 y 15 dB para imitar un aula. El borrador solo sirve para comparar variantes: no es
+V3 ni V4.
+
+======================================================================================================
+3. V2 · PREPROCESAMIENTO (contrato v2_preprocesamiento.md)
+======================================================================================================
+
+- Palabra: el detector de V1 sobre el audio SIN filtrar. [CAMBIA] Con el pasabanda antes de detectar,
+  la "s" de "salir" (casi toda por encima de 4 kHz) desaparece y 14 "salir" quedaban por debajo de 0,3 s.
+- Si hay varios segmentos, la palabra es el más fuerte (un golpe o una voz de fondo no se suman).
+- Recorte con 40 ms de margen a cada lado; sin regla de borde: si la palabra toca el final del audio,
+  el margen se completa con ceros (riesgo b de Gemini).
+- No válido si no hay palabra o si dura fuera de 0,3-2,5 s (riesgo a de Gemini; sección 6 del contrato).
+- Pasabanda 80-4000 Hz, Butterworth de orden 4, en fase cero (sosfiltfilt). Pre-énfasis 0,97.
+- Nivel: la palabra a −26 dBFS [CAMBIA: era −20; con −20 el 42 % de los clips pasaba de 0 dBFS por el
+  pre-énfasis]. Los WAV se guardan en float32.
+- Aumento, solo train, 2 copias por clip:
+  * velocidad 0,92-1,08 como una cinta: un solo remuestreo cambia duración y tono a la vez (−1,4 a
+    +1,3 semitonos), sin phase vocoder (riesgo d de Gemini);
+  * ruido real de train a 10-25 dB, sumado ANTES de buscar la palabra (respuesta 2 de Gemini).
+    Confirmado: el detector recorta peor las copias con ruido, pero el K-NN gana igual (con ruido de
+    25 dB en la evaluación: 89,6 % sumándolo antes, 84,8 % después del recorte, 81,8 % sin aumento);
+  * [CAMBIA] sin micrófono ni sala simulados (ecualización y eco). Probado con tres semillas: con la
+    sala, el acierto con ruido de 25 dB bajó de 89,5 a 87,6 % y el "otro" aceptado subió de 19 a 24 %.
+  * la duración de cada copia se mide sobre la palabra acelerada o frenada (riesgo c de Gemini).
+- Resultado del prototipo: 1121 de 1172 copias válidas (95,6 %); train pasa de 601 a 1722 vectores.
+- Con lo elegido, el borrador da 91 % de acierto con personas nuevas sin ruido, 89,5 % con 25 dB y
+  70 % con 15 dB.
+
+======================================================================================================
+4. V3 · CARACTERÍSTICAS Y PCA (sin cambios de fondo)
+======================================================================================================
+
+- 13 MFCC y Δ, ventanas de 25 ms con avance de 10 ms, banco Mel hasta 4000 Hz (respuesta 1 de Gemini).
+- CMN sobre la palabra (no CMVN por clip: respuesta 3 de Gemini).
+- 5 tramos con media y desvío de MFCC, ΔMFCC, RMS y cruces por cero, más la duración (281 valores).
+- Estandarización con train y peso 1/√(columnas) por bloque. PCA propio.
+- Solo clips válidos de V2.
+
+======================================================================================================
+5. V4 · K-NN Y RECHAZO
+======================================================================================================
+
+- K-NN propio, voto 1/(d + ε), K entre 3, 5, 7 y 9; PCA de 20 o 30 componentes contra sin PCA, elegido
+  con validación cruzada dejando una persona afuera (respuesta 4 de Gemini).
+- Un audio no válido de V2 es "otro" directamente, sin pasar por el K-NN (riesgo a de Gemini).
+- Rechazo: gana "otro", la distancia supera un umbral calibrado en val, o la confianza es menor al 60 %.
+  El borrador da 10-15 % de "otro" aceptado sin umbral de distancia: la meta del 5 % depende de ese
+  umbral.
+- Experimentos en val: pasabanda hasta 7500 Hz, CMVN, ΔΔ, pasar todo por Opus, con y sin voces
+  sintéticas.
+- Final con test: matriz de confusión 4 × 4.
+
+======================================================================================================
+6. FASE 5 · LA APP
+======================================================================================================
+
+- Push-to-talk de hasta 3 s con 250 ms de pre-roll y 150 ms de post-roll (riesgo b de Gemini).
+- Cadena: V2 (sin aumento) → V3 → V4 → comando o "no entendí".
+- Prueba en vivo con tus familiares en cuanto ande.

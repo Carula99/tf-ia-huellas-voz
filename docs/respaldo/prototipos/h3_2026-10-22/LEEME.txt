@@ -1,0 +1,55 @@
+Prototipo de H3 (22/10/2026) · no es el código final
+
+Sirve para fijar el contrato de H3 (características ponderadas y PCA propio,
+docs/contratos/h3_caracteristicas.md, versión 1, commit db2c227). Se corrió en la nube de
+Claude sobre las salidas de H2 (v0.2-huellas-prepro) de las 300 imágenes del dataset
+(cache_h2.py), con Python 3.13, NumPy 2.5.3, SciPy 1.18.1, OpenCV 5.0.0 y scikit-learn 1.9.1
+(solo como oráculo).
+
+Hay tres versiones, de la más vieja a la del contrato:
+
+1. proto_h3.py (primera versión, con los 4 bloques, Hu incluido). La primera corrida usó la
+   distancia al borde aproximada de OpenCV; el archivo ya tiene la euclídea exacta. La usan
+   medir_h3.py, barrido_h3.py, sens_h3.py, diag_cortes.py, cortes_contrato.py (criterios de
+   cortes), tabla_h3.py (tabla 1 del Documento 2) y figura_h3.py (h3_proto.png, figura 6).
+   - Orientación: grilla 5 × 5, media de (cos 2θ, sen 2θ) en la máscara; una celda con menos
+     del 50 % de huella queda en NaN y al estandarizar se imputa con la media de train (vale 0).
+   - Gabor: 6 orientaciones × períodos de 8 y 10 px; media de |respuesta| en 3 anillos
+     (20-110 px) × 8 sectores, a ≥ 10 px del borde de la máscara; sectores con menos del 50 %
+     de esa zona, NaN. Más la energía global por filtro (normalizada, suma 1).
+   - Minucias: crossing number sobre el esqueleto; se descartan las que están a menos de 14 px
+     del borde de la máscara (el borde recto de un corte y el de la ventana cuentan), las
+     espuelas de menos de 12 px, los pares de terminaciones a menos de 10 px y de
+     bifurcaciones a menos de 8 px, y las componentes de menos de 20 px. Densidades global,
+     por anillo y en una grilla 4 × 4.
+   - Hu: 7 momentos (log) del mapa de energía de crestas. Se sacó (decisión 46).
+2. proto_h3c.py: reescritura con los 3 bloques, el escalador, el PCA y la silhouette propios,
+   con las definiciones del borrador del contrato (mismos resultados que proto_h3.py sin Hu).
+3. proto_h3d.py: las definiciones exactas del contrato. Cambia respecto de la 2 solo en dos
+   cosas: las espuelas se buscan con un recorrido en anchura por el esqueleto que no atraviesa
+   uniones (en 15 de las 300 huellas cambia algún conteo; los resultados quedan iguales a la
+   milésima), y el sector de cada píxel se calcula con una expresión fija, porque 500 píxeles
+   caen justo sobre las diagonales.
+   - verificar_contrato.py: mide cada criterio del contrato (sección 6) sobre las 300.
+   - corte_directo.py: el experimento de corte directo (6.7) con las bases de H1 y H2.
+
+Resultados con la versión del contrato (proto_h3d.py):
+- Largos: orientación 50, Gabor 300 y minucias 25; en train se descarta la columna 9 de
+  minucias (la celda de la esquina superior izquierda no tiene datos): d = 374.
+- Silhouette: 0,672 en train, 0,700 en las autorizadas de val y 0,686 en val+test. Por bloque
+  (train / val): orientación 0,829 / 0,865, Gabor 0,811 / 0,832 y minucias 0,464 / 0,512.
+- Contribución de cada bloque a la distancia² en train: 1,851, 1,990 y 1,852 (≈ 2).
+- PCA propio contra scikit-learn: autovalores hasta 1e-15 y proyecciones hasta 1e-11.
+- Cortes: ninguna minucia a menos de 14 px del borde; densidad de minucias con corte / sin
+  corte 1,027, 1,059 y 1,033 por identidad; distancia al centroide propio con corte / sin
+  corte 1,250, 0,980 y 1,085; corte directo del 10 % a 0, 90, 180 y 270°: las 12 variantes
+  quedan en su identidad, a ≤ 0,83 de la distancia de la variante de train más lejana.
+- Las 120 autorizadas quedan más cerca del centroide de su identidad.
+- 49 ms por huella para los 3 bloques.
+
+Resultados de la primera corrida (proto_h3.py con la distancia de OpenCV): silhouette
+en train de cada bloque, orientación 0,83, Gabor 0,81, minucias 0,45 y Hu 0,13; con los 4
+bloques, 0,51; sin Hu, 0,67. Adelanto de H4 (centroides de train, τ en el punto de igual error
+de val): sin Hu, identificación 100 %, FAR 0 % y FRR 4,2 % en test; con Hu, FAR 8,9 % y
+FRR 8,3 %. Con la distancia exacta (la de la tabla 1), sin Hu: silhouette 0,67 y FAR 0 % y FRR 8,3 %
+(2 de 24) en test.

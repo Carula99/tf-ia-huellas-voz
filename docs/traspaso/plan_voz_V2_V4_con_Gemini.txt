@@ -1,0 +1,158 @@
+PLAN DEL CARRIL DE VOZ (V2 A V4) CON LOS APORTES DE GEMINI · 23/10/2026
+Trabajo Final de Inteligencia Artificial I (UNCuyo) · Santiago
+
+Para revisar con Gemini antes de escribir el contrato de V2. Junta el plan de desarrollo (v0.3.2) con los
+10 puntos de la especificación de voz que armó Gemini el 16-17/10, y con lo que se midió en los audios reales.
+
+======================================================================================================
+0. CONTEXTO: QUÉ HAY Y QUÉ NO SE PUEDE CAMBIAR
+======================================================================================================
+
+- El sistema reconoce 3 comandos de voz (reconocer, identificar, salir) y rechaza lo demás (clase "otro").
+- La consigna pide K-NN sobre características acústicas (MFCC, energía). El K-NN, el PCA y la validación
+  cruzada están programados desde cero en NumPy; scikit-learn solo se usa en los tests, como referencia.
+- Captura en la demo: push-to-talk de hasta 3 s con el micrófono interno de la notebook. Windows tiene
+  activos la supresión de ruido y el control automático de volumen, y no se tocan hasta la presentación:
+  entrenamiento y demo pasan por el mismo procesamiento.
+- Metas: acierto ≥ 90 % con personas que no están en el entrenamiento, y ≤ 5 % de "otro" tomado como
+  comando.
+- V1 (dataset) está terminado: 828 clips de 16 kHz, mono, con una palabra cada uno.
+  * train: 309 de la notebook + 141 de WhatsApp + 142 de voces sintéticas (edge-tts) + 30 de ruido
+    ambiente, de 18 personas reales.
+  * val y test: 4 personas cada una (91 y 95 clips), solo de la notebook (el micrófono de la demo), con
+    hombres y mujeres y de las dos tandas de grabación. Nadie está en dos particiones.
+  * Se excluyeron 17 clips (vacíos, cortados, con dos palabras o de duración fuera de 0,3-2,5 s).
+
+======================================================================================================
+1. LO QUE SE MIDIÓ EN LOS AUDIOS REALES (para contrastar los números de Gemini)
+======================================================================================================
+
+Medido sobre la palabra de cada clip de comando (hasta 60 por origen):
+
+  Origen              99 % de la energía   99,9 % de la energía   Energía sobre 4 kHz   Palabra sobre el
+                      está por debajo de   está por debajo de     (respecto del total)  resto del clip
+  Notebook            4,9 kHz              7,6 kHz                −19 dB                39 dB (p10: 35)
+  WhatsApp OGG 16 kHz 2,2 kHz              4,9 kHz                −25 dB                33 dB (p10: 29)
+  WhatsApp OGG 48 kHz 2,4 kHz              5,4 kHz                −26 dB                33 dB (p10: 27)
+  Grabadora .m4a      4,1 kHz              6,2 kHz                −19 dB                34 dB (p10: 29)
+  Voces sintéticas    6,0 kHz              10,4 kHz               −18 dB                39 dB (p10: 35)
+
+Duración de la palabra (p10 / mediana / p90, en segundos):
+  identificar: 0,71 / 0,84 / 1,34   reconocer: 0,61 / 0,73 / 1,23   salir: 0,38 / 0,49 / 0,98 (notebook)
+  En WhatsApp, casi igual; las voces sintéticas son un poco más cortas ("salir": 0,36 de mediana).
+
+Qué dicen estas medidas:
+- Banda: las notas de voz de WhatsApp casi no tienen voz por encima de 4-5 kHz (el códec Opus de WhatsApp
+  la recorta). La banda común a todos los orígenes es hasta 4 kHz, así que el pasabanda 80-4000 Hz del plan
+  es la opción que menos diferencia deja entre micrófonos. Con 7500 Hz, la notebook y las voces sintéticas
+  tendrían información que WhatsApp no tiene.
+- Ruido: las grabaciones están limpias (la palabra queda 27 a 39 dB por encima del resto). En un aula va a
+  haber bastante más ruido, así que el aumento de datos tiene que llegar a relaciones señal-ruido más bajas
+  que las que hay en los datos.
+- Duración: "salir" dura la mitad que las otras dos palabras; la duración sirve como característica.
+- En 6 tomas excluidas la palabra estaba bien, pero había voces de fondo casi tan fuertes como ella: el
+  ruido de voces es el caso más difícil.
+
+======================================================================================================
+2. PLAN POR ETAPA
+======================================================================================================
+
+V2 · PREPROCESAMIENTO (el próximo contrato)
+- Recorte de silencios con el detector de V1 (umbral relativo al tramo más fuerte, piso por percentil y
+  regla de dominancia), dejando 40 ms de margen a cada lado de la palabra.
+- "Audio sin voz": si no queda una palabra de 0,3 a 2,5 s, el audio se marca como no válido (sin errores
+  ni divisiones por cero) y en la demo se responde "no entendí".
+- Pasabanda 80-4000 Hz, Butterworth de orden 4, aplicado en fase cero (sosfiltfilt: hacia adelante y hacia
+  atrás, sin corrimiento temporal). Aporte de Gemini.
+- Pre-énfasis 0,97 y normalización RMS (todas las palabras al mismo nivel, por ejemplo −20 dBFS).
+- Aumento de datos, solo en train; cada copia conserva el código de su persona:
+  * ruido real: los clips de ruido ambiente de train (grabados con la notebook), con una relación
+    señal-ruido de 10 a 25 dB, sumado ANTES del recorte, como pasa en vivo (aporte de Gemini, adaptado);
+  * tono ±1,5 semitonos y velocidad 0,92-1,08×;
+  * micrófono y sala simulados: ecualización suave al azar (±6 dB por bandas) y un eco leve, porque el
+    profesor va a hablar a 40-80 cm de la notebook (punto que marcó Gemini);
+  * 2 copias por clip (a confirmar): train pasaría de 622 a unos 1900 vectores.
+- El mismo preprocesamiento (sin aumento) se aplica en vivo en la demo.
+
+V3 · CARACTERÍSTICAS Y PCA
+- 13 MFCC y sus deltas (Δ), ventanas de 25 ms con avance de 10 ms, banco Mel de 26 a 40 filtros hasta
+  4000 Hz.
+- Normalización cepstral (CMN): a cada coeficiente se le resta su media sobre la palabra recortada. Cancela
+  la diferencia lineal entre micrófonos (en el logaritmo, el canal es una suma).
+- 5 tramos iguales de la palabra: media y desvío de MFCC, de ΔMFCC, de la energía RMS y de la tasa de cruces
+  por cero en cada tramo, más la duración de la palabra. Unos 281 valores por audio, con el mismo largo para
+  cualquier duración.
+- Estandarizar con las estadísticas de train y ponderar cada bloque por 1/√(cantidad de columnas), para que
+  ningún bloque domine la distancia. PCA propio para las figuras (2D y 3D) y como opción para el K-NN.
+
+V4 · K-NN Y RECHAZO
+- K-NN propio con voto ponderado 1/(d + ε). K entre 3, 5, 7 y 9, elegido con validación cruzada dejando una
+  persona afuera dentro de train (las copias aumentadas salen con su persona); con PCA de 20 o 30
+  componentes o sin PCA.
+- Rechazo ("no entendí") si: gana la clase "otro"; la distancia media a los vecinos supera un umbral
+  calibrado en val; o la confianza del voto es menor al 60 %.
+- Experimentos, decididos siempre en val (nunca mirando test):
+  * pasabanda hasta 7500 Hz contra 4000 Hz (aporte de Gemini; las medidas dicen que 4000 conviene);
+  * normalización de media y varianza (CMVN, con un piso para la varianza) contra solo media (Gemini);
+  * agregar ΔΔ (Gemini);
+  * pasar por Opus todo lo que no viene de WhatsApp (también el audio en vivo);
+  * con y sin voces sintéticas.
+- Evaluación final con test: matriz de confusión 4 × 4 (reconocer, identificar, salir, otro/no entendí)
+  con personas nuevas y el micrófono de la demo. Antes de la presentación, una prueba en vivo con gente que
+  nunca grabó (Gemini).
+
+FASE 5 · LA PARTE DE VOZ DE LA APP
+- Push-to-talk de hasta 3 s con "pre-roll" de 250 ms: el micrófono graba siempre en un buffer y, al
+  apretar, se agregan los últimos 250 ms, por si se empieza a hablar antes de apretar (aporte de Gemini).
+- Cadena en vivo: V2 (sin aumento) → V3 → V4 → comando o "no entendí".
+
+======================================================================================================
+3. LOS 10 PUNTOS DE GEMINI: QUÉ SE HACE CON CADA UNO
+======================================================================================================
+
+ 1. 16 kHz mono .................................. Ya está (V1).
+ 2. Pasabanda 80-7500 Hz de fase cero ............ Se adopta la fase cero; se mantiene 4000 Hz por lo que se
+                                                   midió; 7500 Hz queda como experimento de V4.
+ 3. Ventana fija de 1,25 s ....................... No se usa: los 5 tramos proporcionales más la duración
+                                                   dan un vector de largo fijo sin rellenar con silencio.
+ 4. Recorte adaptativo por percentiles ........... Adoptado en la idea: el detector de V1 ya usa un piso por
+                                                   percentil y un umbral relativo; V2 lo reutiliza.
+ 5. Ruido real de la notebook, SNR 8-22 dB ....... Adoptado y adaptado: ruido real de train, de 10 a 25 dB,
+                                                   sumado antes del recorte.
+ 6. 13 MFCC + Δ + ΔΔ ............................. 13 MFCC + Δ; ΔΔ como experimento de V4.
+ 7. CMS con piso de varianza ..................... CMN sobre la palabra recortada; la varianza como
+                                                   experimento de V4.
+ 8. Cuarta clase + umbral de confianza ........... Ya está: clase "otro" + umbral de distancia + confianza
+                                                   del 60 %. Toses y golpes ya están en "otro"; teclado y
+                                                   respiración, a grabar si hace falta.
+ 9. Partición por persona, test con la notebook .. Ya está (V1); se suma la prueba en vivo con gente nueva.
+10. Pre-roll de 250 ms ........................... Adoptado para la Fase 5.
+
+Lo que no se adopta, y por qué:
+- La red convolucional con softmax en TensorFlow: la consigna pide K-NN, y el softmax siempre reparte el
+  100 % entre las clases aunque el profesor tosa. El K-NN con umbral de distancia detecta "esto no se parece
+  a nada" de forma natural.
+- La normalización cepstral sobre la ventana fija con relleno: en "salir" (0,49 s de mediana) más de la
+  mitad de una ventana de 1,25 s sería silencio, y la media que se resta sería más del silencio que de la
+  voz. Además, en entrenamiento el ruido se sumaría también sobre el relleno y en vivo no.
+
+======================================================================================================
+4. PREGUNTAS PARA CORROBORAR CON GEMINI
+======================================================================================================
+
+1. Con las medidas de la sección 1 (WhatsApp casi sin voz por encima de 4-5 kHz), ¿está bien mantener el
+   pasabanda en 80-4000 Hz para que todos los orígenes queden comparables?
+2. Para una demo en un aula, ¿alcanza el aumento con ruido real a 10-25 dB de relación señal-ruido, o
+   conviene bajar hasta 5 dB? ¿Y para las voces de fondo (el caso más difícil que apareció)?
+3. ¿CMN sobre la palabra más el desvío por tramo es suficiente, o conviene CMVN desde el principio?
+4. Con unos 281 valores por audio y unos 1900 vectores de train (con el aumento), ¿el K-NN conviene en el
+   espacio completo ponderado o después de un PCA de 20-30 componentes?
+5. ¿Hay algo del plan que te parezca un riesgo para la demo en vivo y que no esté cubierto?
+
+======================================================================================================
+5. PARA DECIDIR CON SANTIAGO ANTES DEL CONTRATO DE V2
+======================================================================================================
+
+- Cuántas copias aumentadas por clip (propuesta: 2).
+- Si se graban audios extra para "otro" (teclado, respiración, voces de fondo) con la notebook.
+- Quién hace la prueba en vivo con gente nueva, y cuándo (antes de la semana del 10/11).
