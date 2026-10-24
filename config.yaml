@@ -106,6 +106,9 @@ voz:
     fmax: 4000
     ventana_ms: 25
     avance_ms: 10
+    n_fft: 512
+    delta_ventana: 5
+    piso_rms: 1.0e-6
   tramos: 5
   knn:
     k_candidatos: [3, 5, 7, 9]
