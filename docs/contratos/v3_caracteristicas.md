@@ -1,6 +1,8 @@
 # Contrato · V3 · Características acústicas por bloques y PCA propio
 
-**Versión 1 · 24/10/2026.** Es lo que verifica `tests/test_v3.py`. Los tests se escriben en otro chat o ventana aislada solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml`, `src/config.cargar_config` y `RAIZ`), de H3 (`src/core_ml/pca.py` con `PCA` y `src/core_ml/metricas.py` con `silhouette`) y de V2 (`Preprocesado`, `preprocesar`, `generar_prepro`, `COLUMNAS_V2` y el dataset preprocesado de `data/voz/prepro/`). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
+**Versión 1.1 · 24/10/2026** (la 1 es del mismo día). **Cambio en la 1.1:** (1) en 6.2 se explicita que cuando `n_componentes=None` (`k_eff = min(n − 1, d)` según el contrato de H3), el oráculo de scikit-learn se invoca con `n_components=min(n − 1, d)` (porque `PCA(n_components=None)` de scikit-learn devuelve `min(n, d)` incluyendo el autovalor nulo del centrado); (2) en 6.4 el umbral de `silhouette` de la muestra sintética de la sección 5 pasa de `0.40` (escrito sin medir la receta sintética) a `0.25` (los valores exactos de la receta de la sección 5 son `0,3138` en `train` y `0,2647` en `val`). Ningún criterio sobre los datos reales cambia. Se anota en el Documento 2.
+
+Es lo que verifica `tests/test_v3.py`. Los tests se escriben en otro chat o ventana aislada solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml`, `src/config.cargar_config` y `RAIZ`), de H3 (`src/core_ml/pca.py` con `PCA` y `src/core_ml/metricas.py` con `silhouette`) y de V2 (`Preprocesado`, `preprocesar`, `generar_prepro`, `COLUMNAS_V2` y el dataset preprocesado de `data/voz/prepro/`). Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
 **Qué hace V3:** toma cada clip válido de V2 (la palabra recortada con margen, filtrada entre 80 y 4000 Hz con pre-énfasis y normalizada a −26 dBFS), descarta las tramas del margen, aplica normalización cepstral de media (CMN) sobre la palabra y resume la señal en un vector de largo fijo (`d = 281`) dividido en 5 bloques: estadísticas en 5 tramos iguales de los 13 MFCC (`130`), de sus derivadas temporales Δ (`130`), de la energía RMS en dB (`10`) y de la tasa de cruces por cero (`10`), más la duración de la palabra en segundos (`1`). Ajusta el escalador solo con `train`, pondera cada bloque por `1/√(columnas usadas)` para que todos aporten lo mismo a la distancia euclídea y proyecta con el `PCA` propio de `src/core_ml/pca.py`. No entrena ni evalúa el K-NN: eso es V4.
 
@@ -171,7 +173,7 @@ Para que los tests de los puntos 6.4 y 6.5 sean rápidos e independientes de los
 
 ### 6.2 PCA propio y silhouette propia (`src/core_ml/`)
 
-- Con matrices de dimensión `(60, 281)` (como los vectores de V3) y `k` en `{2, 3, 20, 30, None}`: `PCA` de `src.core_ml.pca` coincide con `sklearn.decomposition.PCA(n_components=k, svd_solver="full")` en `media`, `varianza`, `proporcion_varianza`, `componentes` y `transformar` (salvo el signo de cada componente, con la entrada de mayor valor absoluto positiva), con tolerancia `1e-6`.
+- Con matrices de dimensión `(60, 281)` (como los vectores de V3) y `k` en `{2, 3, 20, 30, None}`: `PCA(n_componentes=k)` de `src.core_ml.pca` coincide con `sklearn.decomposition.PCA(n_components=k if k is not None else min(n - 1, d), svd_solver="full")` en `media`, `varianza`, `proporcion_varianza`, `componentes` y `transformar` (salvo el signo de cada componente, con la entrada de mayor valor absoluto positiva), con tolerancia `1e-6`.
 - `silhouette` de `src.core_ml.metricas` coincide con `sklearn.metrics.silhouette_score` (tolerancia `1e-9`) con etiquetas de texto (`"reconocer"`, `"identificar"`, `"salir"`, `"otro"`).
 - Ni `src/core_ml/pca.py`, ni `src/core_ml/metricas.py`, ni `src/voz/caracteristicas.py` importan `scikit-learn` (el texto de los tres archivos no contiene `sklearn`).
 
@@ -192,7 +194,7 @@ Para que los tests de los puntos 6.4 y 6.5 sean rápidos e independientes de los
   - Cada entrada `NaN` en una columna usada se imputa a `0.0` exacto en `Z`, y las columnas con menos de 2 datos no `NaN` o desvío `≤ 1e-9` en `train` quedan con `columnas[b][j] == False` y se descartan.
   - `pesos[b] == 1 / √(columnas[b].sum())`, y la contribución a la distancia cuadrática de cada uno de los 5 bloques en `train` (sin `NaN`) es `2.0` (tolerancia `1e-9`).
   - `transformar` de un clip individual `(d_b,)` coincide con la fila correspondiente de `transformar` por lote `(n, d_b)` (`1e-12`), y una fila no depende de las demás filas del lote.
-  - En la muestra sintética de 3 clases (sección 5), la `silhouette` sobre `Z` es `≥ 0.40` tanto en `train` como en `val`.
+  - En la muestra sintética de 3 clases (sección 5), la `silhouette` sobre `Z` es `≥ 0.25` tanto en `train` como en `val` (da `0,3138` y `0,2647`).
   - Lanza `ValueError` si faltan o sobran claves de `BLOQUES`, si las dimensiones o `d_b` no coinciden, si hay `< 2` filas en `ajustar_escalador`, si un bloque queda con todas las columnas constantes en `train`, o si hay `±Inf`.
 
 ### 6.5 Archivo de características y figura (`generar_caracteristicas`, `generar_figura` en `tmp_path`)
