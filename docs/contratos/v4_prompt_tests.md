@@ -3,7 +3,7 @@
 Se usa en un chat o ventana aislada (con un modelo distinto de Gemini, como Claude Sonnet 3.7 / Opus o GPT-4o), sin el contexto del desarrollo ni acceso a los archivos de prototipos ni de código previo, con `v4_clasificacion.md` adjunto o pegado a continuación.
 
 - **Fecha:** 24/10/2026
-- **Herramienta y modelo:** Ventana aislada / modelo externo (distinto de Gemini). Lee únicamente `v4_clasificacion.md` (versión 1). Genera `tests/test_v4.py` congelado antes de iniciar la implementación en `src/`.
+- **Herramienta y modelo:** Ventana aislada / modelo externo (distinto de Gemini). Lee únicamente `v4_clasificacion.md` (versión 1.1). Genera `tests/test_v4.py` congelado antes de iniciar la implementación en `src/`.
 
 ```text
 Actuá como un ingeniero de testing en Python. Voy a implementar la etapa V4 (clasificador K-NN propio con voto ponderado por distancia, selección de hiperparámetros por validación cruzada dejando una persona afuera en train, reponderación de bloques y proyección PCA, normalización L2 unitaria por fila, calibración del umbral de rechazo tau* en val, y reconocimiento completo de audio) del trabajo final de IA I (Python 3.12, Windows, VS Code).
