@@ -148,6 +148,14 @@ voz:
               es-ES-ElviraNeural, es-ES-AlvaroNeural, es-CO-SalomeNeural, es-CO-GonzaloNeural]
       velocidades: ["-10%", "+10%"]
       otros: [conocer, salida, identidad]
+  preprocesamiento:         # V2: preprocesamiento de voz (contrato v2_preprocesamiento.md, sección 2)
+    margen_ms: 40
+    orden_filtro: 4
+    nivel_rms_db: -26.0
+    aumento:
+      copias: 2
+      velocidad: [0.92, 1.08]
+      snr_db: [10.0, 25.0]
 
 metas:                      # plan de desarrollo, sección 1.3
   identificacion_min: 0.95
