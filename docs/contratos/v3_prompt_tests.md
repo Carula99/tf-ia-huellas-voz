@@ -3,7 +3,7 @@
 Se usa en un chat o ventana aislada, sin el contexto del desarrollo, con `v3_caracteristicas.md` adjunto.
 
 - **Fecha:** 24/10/2026
-- **Herramienta y modelo:** [a completar al congelar `tests/test_v3.py`]
+- **Herramienta y modelo:** Antigravity (Gemini 4 Argon, High), en una ventana separada leyendo únicamente `v3_caracteristicas.md` (versión 1). Entregó `tests/test_v3.py` sin preguntas: 45 tests recolectados por pytest (44 rápidos y 1 de aceptación con `@pytest.mark.aceptacion`).
 
 ```text
 Actuá como un ingeniero de testing en Python. Voy a implementar la etapa V3 (extracción de características acústicas de voz por bloques —MFCC con CMN, Δ, energía RMS, cruces por cero y duración—, escalador ponderado y PCA propio) del trabajo final de IA I (Python 3.12, Windows, VS Code). El contrato completo es el archivo adjunto v3_caracteristicas.md: firmas exactas, definiciones y criterios de aceptación. Escribí un único archivo, tests/test_v3.py, con pytest, que verifique cada punto de la sección 6 del contrato (la 7 es manual: no la automatices).
