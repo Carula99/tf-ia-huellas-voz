@@ -2,8 +2,8 @@
 
 Se usa en un chat nuevo, sin el contexto del desarrollo, con `v2_preprocesamiento.md` adjunto.
 
-- **Fecha:** <se completa al usarlo>
-- **Herramienta y modelo:** <se completa al usarlo>
+- **Fecha:** 23/10/2026
+- **Herramienta y modelo:** Antigravity (Gemini 4 Argon, High), en una ventana separada leyendo únicamente `v2_preprocesamiento.md` (versión 1). Entregó `tests/test_v2.py` sin preguntas: 64 tests recolectados por pytest (63 rápidos y 1 de aceptación con `@pytest.mark.aceptacion`).
 
 ```text
 Actuá como un ingeniero de testing en Python. Voy a implementar la etapa V2 (preprocesamiento de voz) del trabajo final de IA I (Python 3.12, Windows, VS Code). El contrato completo es el archivo adjunto v2_preprocesamiento.md: firmas exactas, tipos y criterios de aceptación. Escribí un único archivo, tests/test_v2.py, con pytest, que verifique cada punto de la sección 7 del contrato (la 8 es manual: no la automatices).
