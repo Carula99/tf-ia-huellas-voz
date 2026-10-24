@@ -1,0 +1,14 @@
+PROTOTIPO DE V3 (CARACTERÍSTICAS DE VOZ Y PCA PROPIO) · 24/10/2026 · carril de voz
+
+Con este script (proto_v3.py) se midieron sobre data/voz/prepro/ (los 1908 clips válidos de V2)
+las dimensiones, tramas por palabra y por tramo, contribuciones de los 5 bloques, silhouette
+(propia vs. scikit-learn), varianza explicada del PCA propio y el chequeo con el K-NN del borrador,
+para fijar el contrato docs/contratos/v3_caracteristicas.md.
+
+Cómo correrlo desde la raíz del repo:
+    venv\Scripts\python "C:\Users\Santiago\OneDrive\Escritorio\IA 1\Trabajo final\Prototipos\v3_2026-10-24\proto_v3.py"
+
+Archivos:
+- proto_v3.py: script de medición sobre data/voz/prepro/.
+- resultados.txt: salida completa de la corrida sobre los 1908 clips válidos.
+
