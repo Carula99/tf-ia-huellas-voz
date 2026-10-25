@@ -21,3 +21,6 @@ models/*
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Salida del armado del informe (docs/informe/armar.py)
+docs/informe/salida/

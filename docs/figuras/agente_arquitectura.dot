@@ -1,0 +1,47 @@
+// Arquitectura del agente (informe final). Se dibuja con:
+//   dot -Tpng -Gdpi=200 docs/figuras/agente_arquitectura.dot -o docs/figuras/agente_arquitectura.png
+digraph arquitectura {
+    graph [rankdir=TB, fontname="DejaVu Sans", fontsize=13, nodesep=0.35, ranksep=0.4, newrank=true];
+    node  [fontname="DejaVu Sans", fontsize=13, shape=box, style="rounded,filled", fillcolor="#FFFFFF", color="#5A6B7D"];
+    edge  [fontname="DejaVu Sans", fontsize=12, color="#5A6B7D"];
+
+    subgraph cluster_sensores {
+        label="Sensores"; style="rounded,dashed"; color="#9AA7B4";
+        lector [label="Lector simulado\n(huella elegida en la app)", fillcolor="#EEF3F8"];
+        mic [label="Micrófono: búfer circular\ny push-to-talk (250 ms antes,\nhasta 3 s, 150 ms después)", fillcolor="#EEF3F8"];
+    }
+
+    subgraph cluster_huella {
+        label="Percepción de la huella\n(modelo_huellas.npz)"; labelloc="b"; style="rounded"; color="#2F6DB5"; fontcolor="#2F6DB5";
+        h2 [label="H2 · Preprocesamiento\nreferencia y θ∞ (Sherlock y Monro)\nventana 250 × 250\nCLAHE · Gabor · esqueleto", fillcolor="#E8F0FB"];
+        h3 [label="H3 · 374 características\norientación · Gabor · minucias\npeso 1/√d_b por bloque", fillcolor="#E8F0FB"];
+        h4 [label="H4 · K-means (k = 3)\ndistancia normalizada d_k / r_k\nse acepta si ≤ τ* = 1,561", fillcolor="#E8F0FB"];
+        h2 -> h3 -> h4;
+    }
+
+    subgraph cluster_voz {
+        label="Percepción de la voz\n(modelo_voz.npz)"; labelloc="b"; style="rounded"; color="#C07A12"; fontcolor="#C07A12";
+        v2 [label="V2 · Preprocesamiento\npalabra principal\npasabanda 80–4000 Hz\npre-énfasis · −26 dBFS", fillcolor="#FFF3E3"];
+        v3 [label="V3 · 281 características\nMFCC con CMN · Δ · energía\nZCR · duración (5 tramos)", fillcolor="#FFF3E3"];
+        v4 [label="V4 · K-NN (K = 5, PCA 20)\nvoto 1/(d + ε) · confianza ≥ 0,60\ndistancia ≤ τ* = 0,774", fillcolor="#FFF3E3"];
+        v2 -> v3 -> v4;
+    }
+
+    agente [label="Agente reactivo basado en modelos\nmáquina de estados (reglas 0 a 10)\n\nestado interno: huella cargada y\nresultado del último «Reconocer»", fillcolor="#E8F5EC", color="#2E7D4F", penwidth=1.6];
+
+    subgraph cluster_actuadores {
+        label="Actuadores"; style="rounded,dashed"; color="#9AA7B4";
+        cartel [label="Cartel AUTORIZADO /\nNO AUTORIZADO\n«Identidad Sintética #N»\navisos", fillcolor="#EEF3F8"];
+        visor [label="Visor PCA 2D de train\ny barra de la distancia\ncontra τ*", fillcolor="#EEF3F8"];
+        cierre [label="Cierre de la app\n(libera el micrófono)", fillcolor="#EEF3F8"];
+    }
+
+    lector -> h2 [label="imagen"];
+    mic -> v2 [label="clip"];
+    h4 -> agente [label="identidad (o 0)\ny distancia"];
+    v4 -> agente [label="comando\no «otro»"];
+    agente -> cartel;
+    agente -> visor;
+    agente -> cierre;
+    {rank=same; lector; mic}
+}

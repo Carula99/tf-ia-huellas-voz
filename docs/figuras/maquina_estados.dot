@@ -1,0 +1,29 @@
+// Máquina de estados del agente (tabla de reglas 2.5 del Documento 2 y sección 4.1 del contrato de la Fase 5).
+// Entre paréntesis, el número de regla. Las reglas que valen desde cualquier estado (1, 8, 9 y 10) van en el recuadro.
+// Se dibuja con:
+//   dot -Tpng -Gdpi=200 docs/figuras/maquina_estados.dot -o docs/figuras/maquina_estados.png
+digraph estados {
+    graph [rankdir=TB, fontname="DejaVu Sans", fontsize=13, nodesep=0.7, ranksep=0.6];
+    node  [fontname="DejaVu Sans", fontsize=13, shape=box, style="rounded,filled", color="#5A6B7D", width=2.2, height=0.6];
+    edge  [fontname="DejaVu Sans", fontsize=12, color="#5A6B7D"];
+
+    inicio [shape=point, width=0.14, color="#5A6B7D"];
+    em [label="ESPERANDO_MUESTRA", fillcolor="#EEF3F8"];
+    hc [label="HUELLA_CARGADA", fillcolor="#E8F0FB"];
+    ea [label="EVALUADA_AUTORIZADA", fillcolor="#E8F5EC", color="#2E7D4F"];
+    er [label="EVALUADA_RECHAZADA", fillcolor="#FBE9E7", color="#C5221F"];
+
+    inicio -> em;
+    em -> em [label="Reconocer o Identificar:\n«Primero elegí una huella» (2)"];
+    em -> hc [label="se elige una huella (1)"];
+    hc -> hc [label="Identificar:\n«Primero decí Reconocer» (4)"];
+    hc -> ea [label="Reconocer:\nd ≤ τ* (3)"];
+    hc -> er [label="Reconocer:\nd > τ* (3)"];
+    ea -> ea [label="Identificar:\n«Identidad Sintética #N» (5)\nReconocer: igual (7)"];
+    er -> er [label="Identificar:\nno se muestra\nninguna identidad (6)\nReconocer: igual (7)"];
+
+    todos [shape=note, style=filled, fillcolor="#FFFDF2", color="#C9B458", fontsize=12,
+           label="Desde cualquier estado menos FIN:\l• se elige otra huella: se borra el resultado → HUELLA_CARGADA (1)\l• la huella no se puede leer: aviso → ESPERANDO_MUESTRA (10)\l• «otro»: «No entendí, repetí el comando», sin cambio (8)\l• Salir: se libera el micrófono → FIN (9); en FIN se ignora todo (0)\l"];
+    ea -> todos [style=invis];
+    er -> todos [style=invis];
+}
