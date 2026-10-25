@@ -63,7 +63,7 @@ Lo escribió Claude Code en la nube el 25/10/2026 al cerrar la Fase 5 (tag `v1.0
 
 ## Uso de IA generativa (sección 7)
 
-- **Herramientas:** Claude Code en la nube (claude.ai/code), modelo [completar], para el prototipo, el contrato, la implementación, la revisión de la verificación manual y este material; otra sesión de Claude Code, sin el repo, modelo [completar], para los tests.
+- **Herramientas:** Claude Code en la nube (claude.ai/code), modelo Claude Opus 5.5, para el prototipo, el contrato, la implementación, la revisión de la verificación manual y este material; otra sesión de Claude Code, sin el repo, modelo Claude Opus 5.5, para los tests.
 - **Cómo se verificó:** el contrato se armó con valores medidos en el prototipo; los tests los escribió otra sesión solo con el contrato y los probó contra una implementación descartable propia con 65 errores plantados (detectó 64); la implementación pasó los tests congelados sin tocarlos; la ventana se revisó con capturas en una pantalla virtual y después en la notebook; la verificación manual (grabación de pantalla y capturas) se revisó cuadro por cuadro contra los valores del prototipo.
 - **P32** (arranque de la Fase 5, Claude Code en la nube): «Seguimos con el TF de IA: Fase 5 (integración, agente y app). Leé docs/traspaso/tf-ia-estado.md del repo y AGENTS.md, mirá git log y git status, y arrancamos con lo que dice "Siguiente → Fase 5".»
 - **P33** (tests de la Fase 5): el bloque de texto de `docs/contratos/f5_prompt_tests.md`, con `f5_integracion.md` adjunto.
