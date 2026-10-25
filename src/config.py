@@ -2,8 +2,8 @@
 
 Contrato: docs/contratos/fase0_setup.md, sección 8 (las claves de H1 vienen de
 docs/contratos/h1_generador.md, sección 1; las de H2, de
-h2_preprocesamiento.md, sección 1, y las de H3, de h3_caracteristicas.md,
-sección 1). Todos los módulos leen la configuración con cargar_config(), así una
+h2_preprocesamiento.md, sección 1, las de H3, de h3_caracteristicas.md,
+sección 1, y las de la Fase 5, de f5_integracion.md, sección 1). Todos los módulos leen la configuración con cargar_config(), así una
 clave faltante falla siempre igual y con un mensaje que la nombra.
 """
 
@@ -139,6 +139,13 @@ CLAVES_OBLIGATORIAS: tuple[str, ...] = (
     "metas.silhouette_min",
     "metas.voz_acierto_min",
     "metas.voz_otro_aceptado_max",
+    "metas.respuesta_max_s",
+    "app.pre_roll_s",
+    "app.post_roll_s",
+    "app.bufer_s",
+    "app.medidor_ms",
+    "app.variante_nueva_desde",
+    "app.intruso_nuevo_desde",
 )
 """Hojas obligatorias de config.yaml, con el camino separado por puntos."""
 

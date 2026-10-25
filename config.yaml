@@ -160,6 +160,14 @@ voz:
       velocidad: [0.92, 1.08]
       snr_db: [10.0, 25.0]
 
+app:                        # Fase 5: agente y app (contrato f5_integracion.md, sección 1)
+  pre_roll_s: 0.25          # lo que se toma de antes de apretar el botón
+  post_roll_s: 0.15         # lo que se sigue grabando después de soltarlo
+  bufer_s: 5.0              # búfer circular del micrófono (≥ pre_roll + push_to_talk_max_s + post_roll + 1 s)
+  medidor_ms: 50            # ventana del medidor de nivel
+  variante_nueva_desde: 1000   # primera "Variante nueva" (el dataset usa 1–40 y el prototipo de H4, 41–140)
+  intruso_nuevo_desde: 1000    # primer "Intruso nuevo" (el dataset usa 1–60 y el prototipo de H4, 61–160)
+
 metas:                      # plan de desarrollo, sección 1.3
   identificacion_min: 0.95
   far_max: 0.05
@@ -167,3 +175,4 @@ metas:                      # plan de desarrollo, sección 1.3
   silhouette_min: 0.50
   voz_acierto_min: 0.90
   voz_otro_aceptado_max: 0.05
+  respuesta_max_s: 1.0      # de soltar el botón a la respuesta en pantalla (tabla REAS; Fase 5)
