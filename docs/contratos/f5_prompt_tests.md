@@ -2,8 +2,8 @@
 
 Se usa en un chat o ventana aislada, sin el contexto del desarrollo ni acceso al código ni a los prototipos (en VS Code, una ventana con una carpeta que tenga solo `f5_integracion.md` y este archivo, por ejemplo `IA 1\f5_para_tests`), con `f5_integracion.md` adjunto o pegado a continuación.
 
-- **Fecha:** [completar]
-- **Herramienta y modelo:** [completar: herramienta, modelo, si hizo preguntas y qué se le respondió, cantidad de tests y SHA256 del archivo entregado]
+- **Fecha:** 25/10/2026
+- **Herramienta y modelo:** Claude Code en la nube, en una sesión aparte sin el repo, con el contrato versión 1 adjunto; modelo: [completar]. Hizo cuatro preguntas, que Santiago respondió: cómo es `huellas.identidades` (lista de mapeos con `id`, `nombre`, `tipo` y `semilla`), qué guarda la columna `intruso` de `metadatos.csv` (el número de intruso, 0 en las identidades; todo entero), qué muestra `Pantalla.identificacion` en `FIN` después de identificar y salir (`""`: 4.6 contradecía a 6.9) y si podía probar el archivo contra una implementación descartable propia (sí, sin entregarla). Las respuestas pasaron a la versión 1.1 del contrato (commit `0dc590c`). Contra su implementación descartable metió 65 errores de a uno y el archivo detecta 64 (el que no, `leer_imagen` atrapando solo `FileNotFoundError`, se comporta igual). Entregó `tests/test_f5.py` el 25/10/2026: 78 funciones y 136 casos (126 rápidos y 10 de aceptación con `@pytest.mark.aceptacion`), SHA256 `1f541dedd6f3942e6e8052947d76346b18977d2ded23acc0844d8426b5eb37b9`, congelado en `ef5a41c`.
 
 ```text
 Actuá como un ingeniero de testing en Python. Voy a implementar la Fase 5 (integración) del trabajo final de IA I (Python 3.12, Windows, VS Code): el agente como máquina de estados con la tabla de reglas condición–acción, la percepción de la huella, la captura de voz con un búfer circular y push-to-talk, las huellas que ofrece la app (catálogo y variantes e intrusos nuevos generados en el momento), el visor PCA 2D y un controlador sin Tk que devuelve una Pantalla después de cada evento. La ventana de CustomTkinter se verifica a mano.
