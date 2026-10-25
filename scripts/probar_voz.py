@@ -3,7 +3,9 @@
 Herramienta de verificación manual (sección 7 del contrato).
 Graba 3 segundos a la frecuencia nativa del micrófono, ejecuta la cadena completa
 de preprocesamiento y clasificación con el modelo entrenado, y muestra el resultado
-en un bucle interactivo hasta ingresar 'q'.
+en un bucle interactivo hasta ingresar 'q'. Antes de cada toma se escribe qué se va
+a decir; cada toma (WAV) y un resultados.csv se guardan en data/voz/vivo/<fecha_hora>/
+(fuera de Git). Una corrida por persona.
 
 Uso, desde la raíz del repo:
     venv\\Scripts\\python scripts/probar_voz.py
@@ -14,6 +16,8 @@ Uso, desde la raíz del repo:
 from __future__ import annotations
 
 import argparse
+import csv
+from datetime import datetime
 import math
 from pathlib import Path
 import sys
@@ -24,6 +28,7 @@ if str(RAIZ) not in sys.path:
 
 import numpy as np
 import sounddevice as sd
+import soundfile as sf
 
 from src.config import cargar_config
 from src.voz.clasificacion import cargar_modelo, reconocer
@@ -84,6 +89,16 @@ def main() -> None:
     print(f"Usando micrófono [{disp}]: {nombre_disp} ({fs_nat} Hz nativo)")
     print(f"Cada toma dura {DURACION_S:.1f} s. El preprocesador remuestrea a {cfg['voz']['frecuencia_muestreo']} Hz.")
 
+    carpeta = RAIZ / "data" / "voz" / "vivo" / datetime.now().strftime("%Y%m%d_%H%M%S")
+    carpeta.mkdir(parents=True, exist_ok=True)
+    ruta_csv = carpeta / "resultados.csv"
+    columnas = ["toma", "archivo", "esperado", "comando", "prediccion", "confianza",
+                "distancia", "tau", "valido", "motivo", "pico"]
+    with open(ruta_csv, "w", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerow(columnas)
+    print(f"Las tomas y los resultados se guardan en {carpeta} (fuera de Git).")
+    toma = 0
+
     print("\n" + "=" * 65)
     print("MODO DE PRUEBA EN VIVO · COMANDOS DE VOZ")
     print("Comandos válidos: 'reconocer', 'identificar', 'salir'.")
@@ -92,7 +107,8 @@ def main() -> None:
 
     while True:
         try:
-            linea = input("\nPresioná [Enter] para grabar 3 s (o 'q' para salir): ").strip()
+            linea = input("\nEscribí qué vas a decir (ej. reconocer, salida, tos, silencio) y Enter"
+                          " para grabar 3 s ('q' para salir): ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nSaliendo...")
             break
@@ -107,6 +123,15 @@ def main() -> None:
         print(f">> Grabación finalizada (pico máximo: {pico:.2f}). Analizando...")
 
         rec = reconocer(y, fs_nat, modelo, cfg)
+
+        toma += 1
+        nombre = f"toma_{toma:02d}.wav"
+        sf.write(carpeta / nombre, y, fs_nat, subtype="FLOAT")
+        dist_csv = f"{rec.distancia:.4f}" if math.isfinite(rec.distancia) else "inf"
+        with open(ruta_csv, "a", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow([toma, nombre, linea, rec.comando, rec.prediccion or "",
+                                    f"{rec.confianza:.4f}", dist_csv, f"{rec.tau:.4f}",
+                                    int(rec.valido), rec.motivo, f"{pico:.3f}"])
 
         print("-" * 50)
         print(f"  COMANDO DECIDIDO:  {rec.comando.upper()}")
