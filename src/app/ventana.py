@@ -91,6 +91,7 @@ class Ventana(ctk.CTk):
         self.nombre_huella.pack(anchor="w", padx=12, pady=(12, 4))
         imagenes = ctk.CTkFrame(f, fg_color="transparent")
         imagenes.pack(fill="both", expand=True, padx=12, pady=4)
+        imagenes.grid_columnconfigure((0, 1), weight=1)    # los rótulos quedan en su mitad aun sin imagen
         self.cruda, self.esqueleto = [], []
         for columna, (rotulo, destino) in enumerate((("Cruda", "cruda"), ("Esqueleto (H2)", "esqueleto"))):
             ctk.CTkLabel(imagenes, text=rotulo).grid(row=0, column=columna, padx=4)
@@ -242,8 +243,20 @@ class Ventana(ctk.CTk):
             etiqueta.configure(image=foto, text="")
             etiqueta.imagen = foto           # que no se la lleve el recolector de basura
 
+    def _escala_pca(self) -> float:
+        """Cuánto agrandar letras y marcadores del PCA. CustomTkinter escala la ventana con el escalado de
+        Windows, pero Matplotlib calcula el suyo con `tk scaling`, que a veces queda en 1: sin esto, el PCA
+        sale con letra chica. Si Matplotlib ya escala, el factor es 1."""
+        try:
+            ventana = float(ctk.ScalingTracker.get_window_scaling(self))
+        except Exception:
+            ventana = 1.0
+        matplotlib = float(getattr(self.lienzo, "device_pixel_ratio", 1.0) or 1.0)
+        return max(1.0, ventana / matplotlib)
+
     def _dibujar_pca(self, p: Pantalla) -> None:
-        clave = (p.punto_pca, p.distancia, p.tau, p.color)
+        f = self._escala_pca()
+        clave = (p.punto_pca, p.distancia, p.tau, p.color, round(f, 2))
         if clave == self._pca_dibujado:
             return
         self._pca_dibujado = clave
@@ -252,35 +265,39 @@ class Ventana(ctk.CTk):
         ax.clear()
         barra.clear()
         if visor is None:
-            ax.text(0.5, 0.5, "Sin datos para el PCA", ha="center", va="center", transform=ax.transAxes)
+            ax.text(0.5, 0.5, "Sin datos para el PCA", ha="center", va="center", transform=ax.transAxes,
+                    fontsize=12 * f)
             ax.set_axis_off()
         else:
             ax.set_axis_on()
             for k, nombre in self._nombres.items():
                 puntos = visor.puntos[visor.identidades == k]
-                ax.scatter(puntos[:, 0], puntos[:, 1], s=22, alpha=0.75, color=COLOR_IDENTIDAD.get(k), label=nombre)
-            ax.scatter(visor.centroides[:, 0], visor.centroides[:, 1], marker="X", s=140, color="black",
+                ax.scatter(puntos[:, 0], puntos[:, 1], s=22 * f * f, alpha=0.75, color=COLOR_IDENTIDAD.get(k),
+                           label=nombre)
+            ax.scatter(visor.centroides[:, 0], visor.centroides[:, 1], marker="X", s=140 * f * f, color="black",
                        label="Centroides (K-means)")
             if p.punto_pca is not None:
                 color = VERDE if p.color == "verde" else ROJO
-                ax.scatter([p.punto_pca[0]], [p.punto_pca[1]], marker="*", s=420, color=color,
-                           edgecolors="black", linewidths=0.8, zorder=5, label="Huella evaluada")
-            ax.set_xlabel(f"PC1 ({_coma(100 * visor.proporcion[0], 1)} %)")
-            ax.set_ylabel(f"PC2 ({_coma(100 * visor.proporcion[1], 1)} %)")
-            ax.legend(fontsize=8, loc="best")
+                ax.scatter([p.punto_pca[0]], [p.punto_pca[1]], marker="*", s=420 * f * f, color=color,
+                           edgecolors="black", linewidths=0.8 * f, zorder=5, label="Huella evaluada")
+            ax.set_xlabel(f"PC1 ({_coma(100 * visor.proporcion[0], 1)} %)", fontsize=10 * f)
+            ax.set_ylabel(f"PC2 ({_coma(100 * visor.proporcion[1], 1)} %)", fontsize=10 * f)
+            ax.tick_params(labelsize=9 * f)
+            ax.legend(fontsize=8 * f, loc="best")
             ax.grid(alpha=0.3)
         if p.distancia is None or p.tau is None:
             barra.text(0.5, 0.5, "Decí «Reconocer» para ver la distancia contra τ*", ha="center", va="center",
-                       transform=barra.transAxes, fontsize=9)
+                       transform=barra.transAxes, fontsize=9 * f)
             barra.set_axis_off()
         else:
             barra.set_axis_on()
             color = VERDE if p.color == "verde" else ROJO
             barra.barh([0], [p.distancia], color=color, height=0.6)
-            barra.axvline(p.tau, color="black", linestyle="--")
+            barra.axvline(p.tau, color="black", linestyle="--", linewidth=1.5 * f)
             barra.set_xlim(0, 1.25 * max(p.distancia, p.tau))
             barra.set_yticks([])
-            barra.set_title(f"distancia {_coma(p.distancia)} contra τ* = {_coma(p.tau)}", fontsize=10)
+            barra.tick_params(labelsize=9 * f)
+            barra.set_title(f"distancia {_coma(p.distancia)} contra τ* = {_coma(p.tau)}", fontsize=10 * f)
         self.lienzo.draw_idle()
 
 
