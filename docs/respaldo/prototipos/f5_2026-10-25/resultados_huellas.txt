@@ -1,0 +1,12 @@
+tau* = 1.5613
+id1: base 1.45 s; variante 17 ms; reconocer 396 ms; 30/30 aceptadas bien, 0 rechazadas, 0 con otra identidad; distancia mediana 0.782, máx 1.456, margen<0.1: 0
+id2: base 1.06 s; variante 18 ms; reconocer 379 ms; 30/30 aceptadas bien, 0 rechazadas, 0 con otra identidad; distancia mediana 0.921, máx 1.393, margen<0.1: 0
+id3: base 1.29 s; variante 17 ms; reconocer 389 ms; 30/30 aceptadas bien, 0 rechazadas, 0 con otra identidad; distancia mediana 0.893, máx 1.554, margen<0.1: 2
+intrusos nuevos: base 1.18 s; 0/30 aceptados; distancia mín 1.797, mediana 2.559
+fondo liso 245: ValueError: No se encontró una huella en la imagen (no hay crestas).
+ruido: identidad 0, distancia 65.008
+negra: ValueError: No se encontró una huella en la imagen (no hay crestas).
+chica 50x50: ValueError: La imagen tiene que medir al menos 64 × 64 px; es (50, 50).
+float: ValueError: La imagen tiene que ser uint8; es float64.
+PCA 2D de train: proporción [0.4764 0.3727] suma 0.8491
+centroides proyectados [[0.252, -1.423], [1.271, 0.903], [-1.523, 0.52]]

@@ -1,0 +1,25 @@
+PROTOTIPO DE LA FASE 5 (HUELLAS EN LA APP) · 25/10/2026 · Claude Code en la nube
+
+Con estos scripts se midió, con el modelo congelado de H4, lo que la Fase 5 agrega del lado de las
+huellas, para fijar el contrato docs/contratos/f5_integracion.md (sección 8): las variantes nuevas
+(v1000 en adelante) y los intrusos nuevos (1000 en adelante) que genera la app, qué pasa con imágenes
+que no son huellas, los tiempos de H2 por separado de H3 + H4 y el PCA 2D de train del visor.
+
+Se corrió en la nube de Claude Code (Linux, Python 3.12, las versiones de requirements.txt), con el
+dataset de huellas regenerado (src.huellas.dataset, src.huellas.caracteristicas y
+src.huellas.clasificacion): la lámina grilla_h1.png salió idéntica byte a byte a la del repo y H4
+imprimió lo mismo que en la notebook (τ* = 1,5613). La voz no se pudo medir: los audios crudos están
+solo en la notebook.
+
+Cómo correrlos, desde la raíz del repo, con el dataset de huellas y models/modelo_huellas.npz:
+    venv\Scripts\python docs\respaldo\prototipos\f5_2026-10-25\proto_huellas.py . 30
+    venv\Scripts\python docs\respaldo\prototipos\f5_2026-10-25\proto_tiempos.py .
+
+Archivos:
+- proto_huellas.py: 30 variantes nuevas por identidad y 30 intrusos nuevos con reconocer de H4,
+  imágenes que no son huellas, y el PCA 2D de train con los centroides proyectados.
+- proto_tiempos.py: distancias de las 6 reservadas, tiempos de preprocesar y de H3 + H4, la receta de
+  la variante 39 contra test/id1_v039.png y las distancias de las 10 primeras variantes e intrusos
+  nuevos.
+- resultados_huellas.txt y resultados_tiempos.txt: las salidas (los tiempos son de la nube, unas 3
+  veces más lenta que la notebook en H2).

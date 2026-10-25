@@ -1,0 +1,12 @@
+id1_v039: distancia 1.2867 → 1
+id1_v040: distancia 0.6012 → 1
+id2_v039: distancia 1.0351 → 2
+id2_v040: distancia 1.5177 → 2
+id3_v039: distancia 0.9906 → 3
+id3_v040: distancia 1.4872 → 3
+H2 (preprocesar): media 339 ms; H3 + H4: media 67 ms
+receta v039 == PNG: True
+id1 v1000–v1009: 0.722 1.231 1.205 0.823 1.456 0.772 1.198 0.796 0.709 0.886 | identidades {1}
+id2 v1000–v1009: 0.734 0.711 0.840 1.005 0.988 0.894 0.743 0.700 0.815 0.947 | identidades {2}
+id3 v1000–v1009: 0.659 0.799 1.345 0.509 0.674 1.391 0.740 0.852 1.170 1.085 | identidades {3}
+intrusos 1000–1009: 2.872 2.538 2.973 2.396 3.094 7.233 1.858 2.405 3.512 2.244 | identidades {0}
