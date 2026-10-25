@@ -1,6 +1,6 @@
 # Contrato · Fase 5 · Integración: agente con máquina de estados, push-to-talk con búfer circular y app
 
-**Versión 1 · 25/10/2026.**
+**Versión 1.1 · 25/10/2026** (la 1 es del mismo día). **Cambio en la 1.1:** las respuestas de Santiago a las cuatro preguntas del chat que escribe `tests/test_f5.py`: (1) `huellas.identidades` es una lista de mapeos con las claves `id`, `nombre`, `tipo` y `semilla`, y la identidad `k` se busca por `id == k` (0.1 y 0.3); (2) en `metadatos.csv` de H1, `intruso` es el número de intruso (1 a 60) y vale 0 en las filas de las identidades, e `identidad`, `intruso`, `variante` y `reservada_demo` son enteros (4.4); (3) `Pantalla.identificacion` muestra el nombre solo en `EVALUADA_AUTORIZADA`: en `FIN`, después de "Identificar" y "Salir", es `""` (4.6 decía otra cosa que 6.9; vale 6.9); (4) el chat de tests puede probar su archivo contra una implementación descartable propia, armada solo con el contrato, que no se entrega. Ninguna otra definición ni valor cambia.
 
 Es lo que verifica `tests/test_f5.py`. Los tests se escriben en otro chat o ventana aislada solo a partir de este archivo y se congelan (commit) antes de implementar. Se apoya en los contratos de la Fase 0 (`config.yaml`, `src/config.cargar_config` y `RAIZ`), de H1 (la receta de las variantes), de H2 (`preprocesar`), de H3 (`caracteristicas`, `Escalador`, `ajustar_escalador`, `PCA` y `caracteristicas.npz`), de H4 (`ModeloHuellas`, `cargar_modelo` y `reconocer`), de V1 (`leer_audio` y el dataset de voz) y de V4 (`ModeloVoz`, `cargar_modelo` y `reconocer`). Lo que se usa de cada uno está copiado en la sección 0.3, así que no hace falta leer esos contratos. Si algo de acá cambia, se cambia de forma explícita y se anota en el Documento 2.
 
@@ -16,7 +16,7 @@ Esta etapa crea `src/agente/agente.py`, `src/agente/percepcion.py` y `src/agente
 
 - **Estados:** `ESPERANDO_MUESTRA`, `HUELLA_CARGADA`, `EVALUADA_AUTORIZADA` y `EVALUADA_RECHAZADA` (los de la tabla 2.5) más `FIN`, el estado al que lleva "Salir" (en la tabla, "Fin").
 - **Comandos:** `voz.comandos` = `["reconocer", "identificar", "salir"]` y la clase de rechazo `voz.clase_rechazo` = `"otro"` ("no entendí"). Son los textos que devuelve `reconocer` de V4 en `comando`.
-- **Identidades:** las de `huellas.identidades` (`id` 1, 2 y 3, con `nombre` "Identidad Sintética #1", "#2" y "#3"). `0` es "no autorizada" (`NO_AUTORIZADO` de H4).
+- **Identidades:** las de `huellas.identidades`, una lista de mapeos con las claves `id`, `nombre`, `tipo` y `semilla`: `{id: 1, nombre: "Identidad Sintética #1", tipo: presilla, semilla: 101}`, `{id: 2, nombre: "Identidad Sintética #2", tipo: verticilo, semilla: 202}` y `{id: 3, nombre: "Identidad Sintética #3", tipo: arco_tienda, semilla: 303}`. La identidad `k` es el elemento con `id == k` (no la posición en la lista). `0` es "no autorizada" (`NO_AUTORIZADO` de H4). *(1.1)*
 - **Huella preparada:** la `HuellaPreprocesada` de H2 (tiene el campo `esqueleto`, `bool` de 250 × 250).
 - **Muestras del micrófono:** los índices del búfer circular son **absolutos**: la muestra `i` es la `i`-ésima que se escribió desde que se creó el búfer (desde 0). Los largos y tiempos en muestras se calculan con `round(segundos · fs)` (el `round` de Python) a la frecuencia nativa `fs` del micrófono.
 
@@ -42,7 +42,8 @@ def sortear_parametros(rng: np.random.Generator, cfg: dict) -> ParametrosVariant
 def aplicar_variante(base: HuellaBase, params: ParametrosVariante, rng: np.random.Generator) -> Variante: ...
 # Variante.imagen: uint8 (400, 320). Receta de una variante (sección 4 de H1):
 #   rng = np.random.default_rng([semilla, variante]); imagen = aplicar_variante(base, sortear_parametros(rng, cfg), rng).imagen
-# El dataset: identidad k con semilla huellas.identidades[k].semilla y variantes 1 a 40 (39 y 40 reservadas para la demo);
+# El dataset: identidad k con el tipo y la semilla del elemento de huellas.identidades con id == k (sección 0.1)
+# y variantes 1 a 40 (39 y 40 reservadas para la demo);
 # intruso i (1 a 60) con tipo huellas.intrusos.tipos[(i - 1) % 4], semilla huellas.intrusos.semilla_base + i y variantes 1 a 3.
 
 # H2 · src/huellas/preprocesamiento.py
@@ -409,7 +410,7 @@ Percepciones: **H**, una huella legible (`imagen` no es `None` y `preparar(image
 
 ### 4.4 Huellas que ofrece la app (`src/app/muestras.py`)
 
-- **`catalogo(cfg, carpeta)`:** lee `carpeta / "metadatos.csv"` de H1 (columnas que usa: `archivo`, relativo a `carpeta`; `particion`; `identidad`; `intruso`; `variante`; `reservada_demo`). Devuelve, en este orden: (1) las filas con `reservada_demo == 1`, en el orden del CSV, como `EntradaHuella(nombre=f"{stem} (reservada)", origen="reservada", verdad=identidad, ruta=carpeta / archivo, variante=variante)`; (2) las filas con `particion == "test"`, `identidad == 0` y `variante == 1` (un intruso de test por identidad intrusa), en el orden del CSV, como `EntradaHuella(nombre=stem, origen="intruso_test", verdad=0, ruta=…, variante=1)`. `stem` es el nombre del archivo sin carpeta ni extensión (`"id1_v039"`, `"intruso31_v1"`). Con el dataset real son 6 + 30 = 36 entradas. `FileNotFoundError` si no está el CSV. No lee las imágenes.
+- **`catalogo(cfg, carpeta)`:** lee `carpeta / "metadatos.csv"` de H1 (UTF-8, separado por comas, con encabezado; columnas que usa: `archivo`, relativo a `carpeta`, por ejemplo `test/id1_v039.png`; `particion`; `identidad`, de 1 a 3, o 0 en los intrusos; `intruso`, el número de intruso de 1 a 60, o 0 en las identidades; `variante`; y `reservada_demo`, 1 o 0. `identidad`, `intruso`, `variante` y `reservada_demo` son enteros escritos como texto, por ejemplo `test/id1_v039.png,test,1,0,…,39,1` y `test/intruso31_v1.png,test,0,31,…,1,0`; el CSV real tiene más columnas, que se ignoran). *(1.1)* Devuelve, en este orden: (1) las filas con `reservada_demo == 1`, en el orden del CSV, como `EntradaHuella(nombre=f"{stem} (reservada)", origen="reservada", verdad=identidad, ruta=carpeta / archivo, variante=variante)`; (2) las filas con `particion == "test"`, `identidad == 0` y `variante == 1` (un intruso de test por identidad intrusa), en el orden del CSV, como `EntradaHuella(nombre=stem, origen="intruso_test", verdad=0, ruta=…, variante=1)`. `stem` es el nombre del archivo sin carpeta ni extensión (`"id1_v039"`, `"intruso31_v1"`). Con el dataset real son 6 + 30 = 36 entradas. `FileNotFoundError` si no está el CSV. No lee las imágenes.
 - **`entrada_archivo(ruta)`:** `EntradaHuella(nombre=Path(ruta).name, origen="archivo", verdad=None, ruta=Path(ruta), variante=None)`.
 - **`GeneradorDemo(cfg)`:** genera huellas que no están en ningún lado, con la receta de H1 (sección 0.3). Guarda las bases que ya generó (por `(tipo, semilla)`) para no volver a generarlas: la primera variante de una identidad tarda lo que tarda su base (1–2 s); las siguientes, unos 20 ms.
   - `variante_nueva(identidad)`: la `n`-ésima llamada para esa identidad (`n = 0, 1, 2, …`, un contador por identidad) usa `v = app.variante_nueva_desde + n`, la base `generar_base(tipo, semilla, cfg)` de esa identidad y `rng = np.random.default_rng([semilla, v])`; la imagen es `aplicar_variante(base, sortear_parametros(rng, cfg), rng).imagen`. Devuelve `(EntradaHuella(nombre=f"id{identidad}_v{v} (nueva)", origen="variante_nueva", verdad=identidad, ruta=None, variante=v), imagen)`. `ValueError` si `identidad` no es una de `huellas.identidades`.
@@ -429,7 +430,7 @@ Percepciones: **H**, una huella legible (`imagen` no es `None` y `preparar(image
 - **`pantalla()`** se arma a partir del agente y del controlador:
   - `estado = agente.estado.value`; `huella = agente.huella`; `imagen = agente.imagen`; `esqueleto = agente.preparada.esqueleto` si hay huella preparada, si no `None`.
   - `cartel` y `color`: `(AUTORIZADO, "verde")` en `EVALUADA_AUTORIZADA`, `(NO_AUTORIZADO, "rojo")` en `EVALUADA_RECHAZADA` y `("", "neutro")` en los demás.
-  - `identificacion = nombres_identidades(cfg)[agente.resultado.identidad]` si `agente.identificada`; si no, `""`.
+  - `identificacion = nombres_identidades(cfg)[agente.resultado.identidad]` si `agente.identificada` **y** el estado es `EVALUADA_AUTORIZADA`; si no, `""`. En `FIN` es siempre `""`, también después de "Identificar" y "Salir" (la regla 9 no toca `identificada`, pero la pantalla no la muestra). *(1.1)*
   - `distancia` y `tau`: los de `agente.resultado` en `EVALUADA_AUTORIZADA` y `EVALUADA_RECHAZADA`; si no, `None`. `punto_pca = tuple(float(c) for c in visor.proyectar(agente.resultado.z))` en esos dos estados si hay visor y el resultado tiene `z`; si no, `None`.
   - `mensaje`, `aviso` y `regla`: los de la última acción del agente (`aviso = regla in REGLAS_AVISO`) o del último aviso del controlador (`regla = 0`, `aviso = True`).
   - `comando` y `detalle_voz`: los del último audio procesado. `detalle_voz` es texto libre, pero con un audio válido nombra la predicción, la confianza y la distancia, y con uno no válido, el `motivo` de V2.
