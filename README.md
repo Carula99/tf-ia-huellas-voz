@@ -4,7 +4,7 @@ Trabajo Final de **Inteligencia Artificial I** · Ingeniería en Mecatrónica ·
 
 Agente de control de acceso con interfaz gráfica. Con comandos de voz ("Reconocer", "Identificar" y "Salir", clasificados con un K-NN) decide si una huella dactilar sintética pertenece a una de tres identidades autorizadas o a un intruso (K-means con k = 3, umbral de distancia calibrado en validación y análisis PCA). PCA, K-means y K-NN están programados desde cero en NumPy; scikit-learn se usa solo como oráculo en los tests.
 
-Estado: Fase 0 (setup) · tag `v0.0-setup`.
+Estado: huellas (H1–H4), voz (V1–V4) e integración (Fase 5) terminadas · tag `v1.0-rc`. Sigue la Fase 6 (informe y defensa).
 
 ## Instalación
 
@@ -21,6 +21,19 @@ venv\Scripts\python -m pip install -r requirements.txt
 No hace falta activar el venv: todos los comandos usan `venv\Scripts\python`. Si preferís activarlo (`venv\Scripts\Activate.ps1`) y PowerShell avisa que la ejecución de scripts está deshabilitada, se habilita solo para tu usuario con `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 En VS Code: abrir la carpeta del repo y elegir el intérprete `venv\Scripts\python.exe` (Ctrl+Shift+P → *Python: Select Interpreter*). Para los notebooks, elegir el mismo entorno como kernel.
+
+## Uso
+
+La app necesita los modelos de H4 y V4 en `models/` y, para la lista de huellas y el visor PCA, el dataset de huellas en `data/huellas/`. Se regeneran con `venv\Scripts\python -m src.huellas.clasificacion --sobrescribir` y `venv\Scripts\python -m src.voz.clasificacion --sobrescribir`.
+
+```powershell
+venv\Scripts\python -m src.app                   # con el micrófono del sistema
+venv\Scripts\python -m src.app --listar          # lista los micrófonos
+venv\Scripts\python -m src.app --dispositivo 2   # con otro micrófono
+venv\Scripts\python -m src.app --sin-microfono   # comandos desde archivos de audio
+```
+
+Se elige una huella y se dicen los comandos manteniendo apretado el botón "Mantener para hablar" (o la barra espaciadora), hasta 3 s: "Reconocer", "Identificar" y "Salir".
 
 ## Tests
 
