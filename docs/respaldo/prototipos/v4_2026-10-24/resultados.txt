@@ -1,0 +1,246 @@
+================================================================================================
+PROTOTIPO DE V4 · K-NN PROPIO, PESOS POR BLOQUE EN CV Y UMBRAL EN VAL (SIN TOCAR TEST)
+================================================================================================
+Filas válidas cargadas: train = 1722, val = 87 (test excluido = 0 filas)
+En val metadatos.csv: total = 101 (87 válidos + 14 no válidos: 0 comandos y 14 'otro')
+En val total real: 67 comandos y 34 'otro'
+
+--- 1. Chequeo del K-NN propio contra KNeighborsClassifier de scikit-learn ---
+  K = 3: máx |dist_propio - dist_sklearn| = 1.11e-15 | predicciones idénticas = 87/87
+  K = 5: máx |dist_propio - dist_sklearn| = 1.11e-15 | predicciones idénticas = 87/87
+  K = 7: máx |dist_propio - dist_sklearn| = 1.11e-15 | predicciones idénticas = 87/87
+  K = 9: máx |dist_propio - dist_sklearn| = 1.11e-15 | predicciones idénticas = 87/87
+
+Pliegues LOSO en train: 10 personas de notebook (231 comandos k0, 72 'otro' válidos k0 + 6 no válidos = 78 'otro' totales)
+Total personas reales en train (notebook + whatsapp, sin TTS): 18 (372 comandos k0)
+
+--- 2. Grilla completa en CV por hablante (train) ---
+Evaluación sobre los 10 hablantes de notebook en train (231 comandos k0 y 78 'otro' k0)
+Columnas:
+  - CV_id3: identificación entre los 3 comandos (entrenando solo con los comandos de train)
+  - CV_4cl: acierto en comandos entrenando con las 4 clases (sin umbral de distancia ni confianza)
+  - CV_c60_cmd / CV_c60_otro: acierto en comandos y % de 'otro' aceptado con pred!='otro' y conf>=0.60
+  - CV_tau5_cmd: acierto en comandos en CV aplicando también un umbral τ que deja 'otro' aceptado <= 5% (<= 3/78)
+  - CV_18p_id3: identificación en los 332 comandos k0 de las 18 personas reales (nb + whatsapp)
+----------------------------------------------------------------------------------------------------------------------
+Esquema                   | PCA  | K  | CV_id3  | CV_4cl  | CV_c60_cmd | CV_c60_otro | CV_tau5_cmd | CV_18p_id3
+----------------------------------------------------------------------------------------------------------------------
+contrato (1,1,1,1,1)      | None |  3 |  95.7 % |  91.8 % |     91.8 % |      23.1 % |      72.3 % |     96.5 %
+contrato (1,1,1,1,1)      | None |  5 |  96.1 % |  93.1 % |     90.0 % |      17.9 % |      74.5 % |     96.8 %
+contrato (1,1,1,1,1)      | None |  7 |  96.5 % |  93.9 % |     87.4 % |      12.8 % |      73.2 % |     96.8 %
+contrato (1,1,1,1,1)      | None |  9 |  96.1 % |  95.2 % |     88.7 % |      14.1 % |      71.4 % |     96.8 %
+contrato (1,1,1,1,1)      |   30 |  3 |  96.1 % |  93.9 % |     93.1 % |      21.8 % |      76.6 % |     96.0 %
+contrato (1,1,1,1,1)      |   30 |  5 |  95.2 % |  93.5 % |     91.3 % |      19.2 % |      76.2 % |     95.7 %
+contrato (1,1,1,1,1)      |   30 |  7 |  96.5 % |  93.1 % |     88.3 % |      12.8 % |      80.5 % |     96.2 %
+contrato (1,1,1,1,1)      |   30 |  9 |  96.1 % |  94.4 % |     86.6 % |      12.8 % |      78.4 % |     96.2 %
+contrato (1,1,1,1,1)      |   20 |  3 |  97.4 % |  92.6 % |     91.3 % |      23.1 % |      68.8 % |     97.0 %
+contrato (1,1,1,1,1)      |   20 |  5 |  95.7 % |  92.6 % |     87.9 % |      16.7 % |      70.1 % |     95.7 %
+contrato (1,1,1,1,1)      |   20 |  7 |  96.1 % |  93.5 % |     85.7 % |      10.3 % |      83.1 % |     96.0 %
+contrato (1,1,1,1,1)      |   20 |  9 |  94.8 % |  91.3 % |     87.0 % |      11.5 % |      79.2 % |     95.2 %
+z_columna (sqrt(d_b))     | None |  3 |  95.2 % |  92.2 % |     91.8 % |      28.2 % |      34.2 % |     95.7 %
+z_columna (sqrt(d_b))     | None |  5 |  95.7 % |  94.4 % |     90.5 % |      16.7 % |      30.7 % |     96.5 %
+z_columna (sqrt(d_b))     | None |  7 |  95.2 % |  94.8 % |     88.3 % |      11.5 % |      61.0 % |     95.7 %
+z_columna (sqrt(d_b))     | None |  9 |  96.1 % |  95.2 % |     88.7 % |      16.7 % |      56.3 % |     97.0 %
+z_columna (sqrt(d_b))     |   30 |  3 |  96.1 % |  94.4 % |     93.1 % |      23.1 % |      45.5 % |     97.0 %
+z_columna (sqrt(d_b))     |   30 |  5 |  96.1 % |  93.9 % |     90.9 % |      15.4 % |      47.2 % |     97.3 %
+z_columna (sqrt(d_b))     |   30 |  7 |  95.7 % |  96.1 % |     89.2 % |      10.3 % |      81.4 % |     96.5 %
+z_columna (sqrt(d_b))     |   30 |  9 |  96.1 % |  95.2 % |     90.0 % |      15.4 % |      68.4 % |     96.8 %
+z_columna (sqrt(d_b))     |   20 |  3 |  97.8 % |  97.4 % |     96.1 % |      25.6 % |      45.0 % |     98.1 %
+z_columna (sqrt(d_b))     |   20 |  5 |  97.4 % |  96.5 % |     93.9 % |      17.9 % |      59.3 % |     97.6 %
+z_columna (sqrt(d_b))     |   20 |  7 |  96.5 % |  96.1 % |     93.1 % |      15.4 % |      72.7 % |     97.3 %
+z_columna (sqrt(d_b))     |   20 |  9 |  97.0 % |  96.1 % |     91.8 % |      12.8 % |      68.8 % |     97.6 %
+sin_dur_zcr (1,1,1,0,0)   | None |  3 |  97.4 % |  94.4 % |     93.9 % |      21.8 % |      54.1 % |     96.2 %
+sin_dur_zcr (1,1,1,0,0)   | None |  5 |  98.3 % |  96.5 % |     91.8 % |      14.1 % |      65.4 % |     97.0 %
+sin_dur_zcr (1,1,1,0,0)   | None |  7 |  98.7 % |  97.8 % |     89.2 % |       9.0 % |      72.7 % |     97.8 %
+sin_dur_zcr (1,1,1,0,0)   | None |  9 |  98.7 % |  98.3 % |     90.0 % |       9.0 % |      70.6 % |     97.3 %
+sin_dur_zcr (1,1,1,0,0)   |   30 |  3 |  97.8 % |  96.1 % |     95.2 % |      16.7 % |      80.1 % |     97.6 %
+sin_dur_zcr (1,1,1,0,0)   |   30 |  5 |  97.0 % |  96.5 % |     93.5 % |      11.5 % |      81.4 % |     96.8 %
+sin_dur_zcr (1,1,1,0,0)   |   30 |  7 |  97.8 % |  96.5 % |     90.9 % |       7.7 % |      85.3 % |     97.0 %
+sin_dur_zcr (1,1,1,0,0)   |   30 |  9 |  97.0 % |  95.2 % |     91.8 % |       7.7 % |      86.6 % |     96.8 %
+sin_dur_zcr (1,1,1,0,0)   |   20 |  3 |  96.5 % |  94.8 % |     93.5 % |      24.4 % |      68.8 % |     95.7 %
+sin_dur_zcr (1,1,1,0,0)   |   20 |  5 |  96.5 % |  96.1 % |     93.1 % |      17.9 % |      68.4 % |     95.7 %
+sin_dur_zcr (1,1,1,0,0)   |   20 |  7 |  96.5 % |  95.7 % |     91.3 % |      11.5 % |      83.1 % |     96.0 %
+sin_dur_zcr (1,1,1,0,0)   |   20 |  9 |  97.8 % |  95.7 % |     90.9 % |      10.3 % |      86.1 % |     96.8 %
+mfcc_delta (1,1,0,0,0)    | None |  3 |  96.5 % |  93.9 % |     93.1 % |      32.1 % |      29.0 % |     94.9 %
+mfcc_delta (1,1,0,0,0)    | None |  5 |  95.2 % |  94.4 % |     89.6 % |      19.2 % |      32.9 % |     95.2 %
+mfcc_delta (1,1,0,0,0)    | None |  7 |  95.2 % |  94.4 % |     84.8 % |      15.4 % |      37.2 % |     95.4 %
+mfcc_delta (1,1,0,0,0)    | None |  9 |  96.1 % |  95.2 % |     87.0 % |      19.2 % |      36.8 % |     95.4 %
+mfcc_delta (1,1,0,0,0)    |   30 |  3 |  95.7 % |  94.4 % |     92.6 % |      28.2 % |      43.7 % |     96.2 %
+mfcc_delta (1,1,0,0,0)    |   30 |  5 |  94.8 % |  93.5 % |     90.9 % |      15.4 % |      49.8 % |     96.2 %
+mfcc_delta (1,1,0,0,0)    |   30 |  7 |  95.2 % |  93.9 % |     88.3 % |       9.0 % |      67.5 % |     96.8 %
+mfcc_delta (1,1,0,0,0)    |   30 |  9 |  95.7 % |  93.9 % |     87.4 % |      11.5 % |      59.7 % |     97.0 %
+mfcc_delta (1,1,0,0,0)    |   20 |  3 |  97.0 % |  95.7 % |     94.4 % |      20.5 % |      37.2 % |     97.0 %
+mfcc_delta (1,1,0,0,0)    |   20 |  5 |  97.8 % |  96.1 % |     93.5 % |      15.4 % |      48.5 % |     97.8 %
+mfcc_delta (1,1,0,0,0)    |   20 |  7 |  96.1 % |  96.1 % |     91.8 % |      12.8 % |      59.7 % |     97.0 %
+mfcc_delta (1,1,0,0,0)    |   20 |  9 |  97.0 % |  94.8 % |     91.8 % |      14.1 % |      62.8 % |     97.3 %
+z_col_sin_dur_zcr         | None |  3 |  95.7 % |  92.2 % |     92.2 % |      32.1 % |      32.0 % |     95.4 %
+z_col_sin_dur_zcr         | None |  5 |  95.2 % |  93.9 % |     91.3 % |      20.5 % |      30.3 % |     95.7 %
+z_col_sin_dur_zcr         | None |  7 |  95.2 % |  94.8 % |     87.4 % |      10.3 % |      57.1 % |     95.4 %
+z_col_sin_dur_zcr         | None |  9 |  96.1 % |  95.7 % |     87.4 % |      14.1 % |      58.0 % |     95.7 %
+z_col_sin_dur_zcr         |   30 |  3 |  96.5 % |  95.7 % |     93.9 % |      28.2 % |      42.4 % |     97.3 %
+z_col_sin_dur_zcr         |   30 |  5 |  95.7 % |  94.8 % |     92.2 % |      15.4 % |      53.7 % |     96.8 %
+z_col_sin_dur_zcr         |   30 |  7 |  96.1 % |  95.2 % |     90.5 % |      10.3 % |      56.7 % |     97.3 %
+z_col_sin_dur_zcr         |   30 |  9 |  95.7 % |  95.7 % |     90.0 % |      11.5 % |      52.4 % |     97.0 %
+z_col_sin_dur_zcr         |   20 |  3 |  97.8 % |  96.5 % |     95.2 % |      25.6 % |      45.0 % |     97.6 %
+z_col_sin_dur_zcr         |   20 |  5 |  97.8 % |  96.1 % |     93.5 % |      17.9 % |      53.7 % |     97.8 %
+z_col_sin_dur_zcr         |   20 |  7 |  96.5 % |  96.1 % |     92.6 % |      15.4 % |      63.6 % |     97.3 %
+z_col_sin_dur_zcr         |   20 |  9 |  97.0 % |  96.5 % |     92.2 % |      12.8 % |      69.7 % |     97.3 %
+
+--- 3. Top 12 configuraciones en CV por hablante (ordenadas por CV_4cl, CV_c60_cmd y CV_id3) ---
+   1. sin_dur_zcr (1,1,1,0,0)   PCA=None K=9 -> CV_4cl=98.27% | CV_id3=98.70% | CV_c60=90.04% (otro=9.0%) | CV_tau5=70.56% | CV_18p=97.31%
+   2. sin_dur_zcr (1,1,1,0,0)   PCA=None K=7 -> CV_4cl=97.84% | CV_id3=98.70% | CV_c60=89.18% (otro=9.0%) | CV_tau5=72.73% | CV_18p=97.85%
+   3. z_columna (sqrt(d_b))     PCA=20   K=3 -> CV_4cl=97.40% | CV_id3=97.84% | CV_c60=96.10% (otro=25.6%) | CV_tau5=45.02% | CV_18p=98.12%
+   4. z_col_sin_dur_zcr         PCA=20   K=3 -> CV_4cl=96.54% | CV_id3=97.84% | CV_c60=95.24% (otro=25.6%) | CV_tau5=45.02% | CV_18p=97.58%
+   5. z_columna (sqrt(d_b))     PCA=20   K=5 -> CV_4cl=96.54% | CV_id3=97.40% | CV_c60=93.94% (otro=17.9%) | CV_tau5=59.31% | CV_18p=97.58%
+   6. sin_dur_zcr (1,1,1,0,0)   PCA=30   K=5 -> CV_4cl=96.54% | CV_id3=96.97% | CV_c60=93.51% (otro=11.5%) | CV_tau5=81.39% | CV_18p=96.77%
+   7. z_col_sin_dur_zcr         PCA=20   K=9 -> CV_4cl=96.54% | CV_id3=96.97% | CV_c60=92.21% (otro=12.8%) | CV_tau5=69.70% | CV_18p=97.31%
+   8. sin_dur_zcr (1,1,1,0,0)   PCA=None K=5 -> CV_4cl=96.54% | CV_id3=98.27% | CV_c60=91.77% (otro=14.1%) | CV_tau5=65.37% | CV_18p=97.04%
+   9. sin_dur_zcr (1,1,1,0,0)   PCA=30   K=7 -> CV_4cl=96.54% | CV_id3=97.84% | CV_c60=90.91% (otro=7.7%) | CV_tau5=85.28% | CV_18p=97.04%
+  10. sin_dur_zcr (1,1,1,0,0)   PCA=30   K=3 -> CV_4cl=96.10% | CV_id3=97.84% | CV_c60=95.24% (otro=16.7%) | CV_tau5=80.09% | CV_18p=97.58%
+  11. z_col_sin_dur_zcr         PCA=20   K=5 -> CV_4cl=96.10% | CV_id3=97.84% | CV_c60=93.51% (otro=17.9%) | CV_tau5=53.68% | CV_18p=97.85%
+  12. mfcc_delta (1,1,0,0,0)    PCA=20   K=5 -> CV_4cl=96.10% | CV_id3=97.84% | CV_c60=93.51% (otro=15.4%) | CV_tau5=48.48% | CV_18p=97.85%
+
+--- 4. Ablación de la base de entrenamiento en CV (sobre sin_dur_zcr, PCA=None y PCA=30, K=5) ---
+  PCA=None | Base completa (k0 + k1/k2 + TTS + ruido)        : CV_4cl= 96.5% | CV_c60_cmd= 91.8% | otro_acep=14.1%
+  PCA=None | Sin voces sintéticas TTS                        : CV_4cl= 97.0% | CV_c60_cmd= 93.1% | otro_acep=16.7%
+  PCA=None | Solo originales k0 (sin aumento k1/k2)          : CV_4cl= 91.8% | CV_c60_cmd= 87.9% | otro_acep=12.8%
+  PCA=None | Solo notebook k0 (sin WhatsApp, TTS ni aumento) : CV_4cl= 96.1% | CV_c60_cmd= 89.6% | otro_acep=25.6%
+  PCA=30   | Base completa (k0 + k1/k2 + TTS + ruido)        : CV_4cl= 96.5% | CV_c60_cmd= 93.5% | otro_acep=11.5%
+  PCA=30   | Sin voces sintéticas TTS                        : CV_4cl= 97.4% | CV_c60_cmd= 93.1% | otro_acep=14.1%
+  PCA=30   | Solo originales k0 (sin aumento k1/k2)          : CV_4cl= 92.2% | CV_c60_cmd= 89.6% | otro_acep=10.3%
+  PCA=30   | Solo notebook k0 (sin WhatsApp, TTS ni aumento) : CV_4cl= 94.4% | CV_c60_cmd= 89.2% | otro_acep=17.9%
+
+--- 5. Evaluación en val y calibración del umbral de distancia τ* (solo train -> val) ---
+En val hay 67 comandos (todos válidos en V2) y 34 'otro' (20 válidos en V2 + 14 no válidos en V2).
+Meta del plan: acierto en comandos >= 90.0% (>= 61/67) y 'otro' aceptado <= 5.0% (<= 1/34 = 2.94%).
+--------------------------------------------------------------------------------------------------------------------
+sin_dur_zcr (1,1,1,0,0)  PCA=None K=3 | val_4cl= 91.0% | c60: cmd= 91.0% otro=3/34 ( 8.8%) | τ(0/34)=1.415 -> cmd=13/67 ( 19.4%) | τ(1/34)=1.562 -> cmd=37/67 ( 55.2%)
+sin_dur_zcr (1,1,1,0,0)  PCA=None K=5 | val_4cl= 91.0% | c60: cmd= 80.6% otro=3/34 ( 8.8%) | τ(0/34)=1.262 -> cmd=5/67 (  7.5%) | τ(1/34)=1.471 -> cmd=15/67 ( 22.4%)
+sin_dur_zcr (1,1,1,0,0)  PCA=None K=7 | val_4cl= 89.6% | c60: cmd= 76.1% otro=2/34 ( 5.9%) | τ(0/34)=1.279 -> cmd=4/67 (  6.0%) | τ(1/34)=1.494 -> cmd=15/67 ( 22.4%)
+sin_dur_zcr (1,1,1,0,0)  PCA=  30 K=3 | val_4cl= 85.1% | c60: cmd= 83.6% otro=4/34 (11.8%) | τ(0/34)=0.760 -> cmd=19/67 ( 28.4%) | τ(1/34)=0.934 -> cmd=48/67 ( 71.6%)
+sin_dur_zcr (1,1,1,0,0)  PCA=  30 K=5 | val_4cl= 92.5% | c60: cmd= 79.1% otro=2/34 ( 5.9%) | τ(0/34)=0.953 -> cmd=43/67 ( 64.2%) | τ(1/34)=1.057 -> cmd=50/67 ( 74.6%)
+sin_dur_zcr (1,1,1,0,0)  PCA=  20 K=5 | val_4cl= 86.6% | c60: cmd= 73.1% otro=3/34 ( 8.8%) | τ(0/34)=0.909 -> cmd=47/67 ( 70.1%) | τ(1/34)=0.919 -> cmd=47/67 ( 70.1%)
+z_columna (sqrt(d_b))    PCA=None K=3 | val_4cl= 94.0% | c60: cmd= 91.0% otro=5/34 (14.7%) | τ(0/34)=12.610 -> cmd=3/67 (  4.5%) | τ(1/34)=13.286 -> cmd=6/67 (  9.0%)
+z_columna (sqrt(d_b))    PCA=None K=5 | val_4cl= 91.0% | c60: cmd= 85.1% otro=4/34 (11.8%) | τ(0/34)=12.746 -> cmd=1/67 (  1.5%) | τ(1/34)=13.315 -> cmd=4/67 (  6.0%)
+z_columna (sqrt(d_b))    PCA=  30 K=5 | val_4cl= 86.6% | c60: cmd= 80.6% otro=5/34 (14.7%) | τ(0/34)=6.391 -> cmd=9/67 ( 13.4%) | τ(1/34)=7.163 -> cmd=21/67 ( 31.3%)
+z_col_sin_dur_zcr        PCA=None K=5 | val_4cl= 91.0% | c60: cmd= 82.1% otro=4/34 (11.8%) | τ(0/34)=11.794 -> cmd=0/67 (  0.0%) | τ(1/34)=13.207 -> cmd=4/67 (  6.0%)
+z_col_sin_dur_zcr        PCA=  30 K=5 | val_4cl= 88.1% | c60: cmd= 79.1% otro=3/34 ( 8.8%) | τ(0/34)=6.080 -> cmd=9/67 ( 13.4%) | τ(1/34)=8.032 -> cmd=35/67 ( 52.2%)
+mfcc_delta (1,1,0,0,0)   PCA=None K=5 | val_4cl= 91.0% | c60: cmd= 77.6% otro=4/34 (11.8%) | τ(0/34)=1.015 -> cmd=0/67 (  0.0%) | τ(1/34)=1.103 -> cmd=2/67 (  3.0%)
+mfcc_delta (1,1,0,0,0)   PCA=  30 K=5 | val_4cl= 89.6% | c60: cmd= 80.6% otro=3/34 ( 8.8%) | τ(0/34)=0.674 -> cmd=31/67 ( 46.3%) | τ(1/34)=0.714 -> cmd=38/67 ( 56.7%)
+contrato (1,1,1,1,1)     PCA=None K=3 | val_4cl= 85.1% | c60: cmd= 85.1% otro=2/34 ( 5.9%) | τ(0/34)=1.851 -> cmd=41/67 ( 61.2%) | τ(1/34)=2.285 -> cmd=57/67 ( 85.1%)
+contrato (1,1,1,1,1)     PCA=None K=5 | val_4cl= 85.1% | c60: cmd= 80.6% otro=2/34 ( 5.9%) | τ(0/34)=1.866 -> cmd=37/67 ( 55.2%) | τ(1/34)=2.332 -> cmd=54/67 ( 80.6%)
+contrato (1,1,1,1,1)     PCA=  30 K=3 | val_4cl= 88.1% | c60: cmd= 85.1% otro=8/34 (23.5%) | τ(0/34)=1.181 -> cmd=43/67 ( 64.2%) | τ(1/34)=1.325 -> cmd=52/67 ( 77.6%)
+
+--- 6. Detalle de distancias y matriz de confusión en val (67 comandos + 34 'otro' = 101 clips) ---
+
+>>> Configuración: sin_dur_zcr (1,1,1,0,0), PCA=None, K=5
+  'otro' en val (rechazado): archivo=val/nb_p20_otro_05_libre_k0.wav pred=salir       conf=0.406 d_gan_med=1.7032 d_gan_min=1.6381 d_media_k=1.7258
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_01_conocer_k0.wav pred=reconocer   conf=0.798 d_gan_med=1.6122 d_gan_min=1.5493 d_media_k=1.6076
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_02_salida_k0.wav pred=salir       conf=0.602 d_gan_med=1.2646 d_gan_min=1.1922 d_media_k=1.2682
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_03_identidad_k0.wav pred=salir       conf=1.000 d_gan_med=1.4716 d_gan_min=1.3883 d_media_k=1.4716
+  'otro' en val (rechazado): archivo=val/nb_p21_otro_04_hola_k0.wav pred=salir       conf=0.596 d_gan_med=1.7634 d_gan_min=1.7466 d_media_k=1.7516
+  Comandos bien clasificados con conf>=0.60 en val (54/67): top 5 mayores d_gan_med = [1.8411, 1.8833, 1.897, 1.9062, 2.0292]
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_reconocer_02_k0.wav verdad=reconocer   pred=reconocer   conf=0.419 d_gan_med=1.4883
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_reconocer_05_k0.wav verdad=reconocer   pred=salir       conf=0.604 d_gan_med=1.6575
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_02_k0.wav     verdad=salir       pred=reconocer   conf=1.000 d_gan_med=1.5433
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_06_k0.wav     verdad=salir       pred=otro        conf=0.806 d_gan_med=1.5554
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_02_k0.wav verdad=identificar pred=identificar conf=0.596 d_gan_med=1.4861
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_02_k0.wav verdad=reconocer   pred=identificar conf=0.601 d_gan_med=1.4988
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_03_k0.wav verdad=reconocer   pred=identificar conf=0.399 d_gan_med=1.4886
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_04_k0.wav verdad=reconocer   pred=reconocer   conf=0.403 d_gan_med=1.5743
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_06_k0.wav verdad=reconocer   pred=reconocer   conf=0.413 d_gan_med=1.6106
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_03_k0.wav     verdad=salir       pred=salir       conf=0.598 d_gan_med=1.6104
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_04_k0.wav     verdad=salir       pred=reconocer   conf=0.603 d_gan_med=1.6374
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_05_k0.wav     verdad=salir       pred=salir       conf=0.597 d_gan_med=1.8995
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_06_k0.wav     verdad=salir       pred=salir       conf=0.404 d_gan_med=1.7314
+  Calibración con d_gan_med: a=1.4706, b=1.4716, τ*=1.4711
+  Matriz de confusión en val (101 clips, orden ['reconocer', 'identificar', 'salir', 'otro']):
+    reconocer   : [3, 0, 0, 20]
+    identificar : [0, 11, 0, 11]
+    salir       : [0, 0, 1, 21]
+    otro        : [0, 0, 1, 33]
+
+>>> Configuración: sin_dur_zcr (1,1,1,0,0), PCA=30, K=5
+  'otro' en val (rechazado): archivo=val/nb_p20_otro_02_salida_k0.wav pred=identificar conf=0.397 d_gan_med=1.1132 d_gan_min=1.0306 d_media_k=1.1035
+  'otro' en val (rechazado): archivo=val/nb_p20_otro_05_libre_k0.wav pred=identificar conf=0.378 d_gan_med=1.1227 d_gan_min=1.1037 d_media_k=1.0680
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_01_conocer_k0.wav pred=reconocer   conf=0.804 d_gan_med=1.0584 d_gan_min=1.0319 d_media_k=1.0634
+  'otro' en val (rechazado): archivo=val/nb_p21_otro_02_salida_k0.wav pred=reconocer   conf=0.414 d_gan_med=0.7657 d_gan_min=0.7503 d_media_k=0.7955
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_03_identidad_k0.wav pred=salir       conf=0.830 d_gan_med=0.9698 d_gan_min=0.8652 d_media_k=1.0108
+  'otro' en val (rechazado): archivo=val/nb_p21_otro_04_hola_k0.wav pred=salir       conf=0.410 d_gan_med=1.0945 d_gan_min=1.0880 d_media_k=1.1216
+  Comandos bien clasificados con conf>=0.60 en val (53/67): top 5 mayores d_gan_med = [1.0288, 1.0553, 1.0676, 1.0764, 1.1384]
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_reconocer_02_k0.wav verdad=reconocer   pred=reconocer   conf=0.412 d_gan_med=0.9060
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_reconocer_04_k0.wav verdad=reconocer   pred=reconocer   conf=0.589 d_gan_med=0.8784
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_02_k0.wav     verdad=salir       pred=otro        conf=0.596 d_gan_med=1.0238
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_05_k0.wav     verdad=salir       pred=salir       conf=0.593 d_gan_med=0.8299
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_06_k0.wav     verdad=salir       pred=salir       conf=0.577 d_gan_med=1.0535
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_02_k0.wav verdad=identificar pred=identificar conf=0.591 d_gan_med=0.9267
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_02_k0.wav verdad=reconocer   pred=reconocer   conf=0.400 d_gan_med=0.8813
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_03_k0.wav verdad=reconocer   pred=reconocer   conf=0.389 d_gan_med=0.9440
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_04_k0.wav verdad=reconocer   pred=identificar conf=0.418 d_gan_med=0.7975
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_05_k0.wav verdad=reconocer   pred=reconocer   conf=0.420 d_gan_med=0.7747
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_06_k0.wav verdad=reconocer   pred=identificar conf=0.588 d_gan_med=0.9079
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_04_k0.wav     verdad=salir       pred=identificar conf=0.389 d_gan_med=1.0805
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_05_k0.wav     verdad=salir       pred=salir       conf=0.577 d_gan_med=1.1859
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_06_k0.wav     verdad=salir       pred=reconocer   conf=0.408 d_gan_med=1.1315
+  Calibración con d_gan_med: a=1.0553, b=1.0584, τ*=1.0569
+  Matriz de confusión en val (101 clips, orden ['reconocer', 'identificar', 'salir', 'otro']):
+    reconocer   : [16, 0, 0, 7]
+    identificar : [0, 21, 0, 1]
+    salir       : [0, 0, 13, 9]
+    otro        : [0, 0, 1, 33]
+
+>>> Configuración: z_columna (sqrt(d_b)), PCA=None, K=5
+  'otro' en val (PASA_C60 ): archivo=val/nb_p20_otro_02_salida_k0.wav pred=salir       conf=0.600 d_gan_med=17.8143 d_gan_min=17.5177 d_media_k=17.8257
+  'otro' en val (PASA_C60 ): archivo=val/nb_p20_otro_03_identidad_k0.wav pred=identificar conf=0.803 d_gan_med=16.6486 d_gan_min=16.0184 d_media_k=16.6995
+  'otro' en val (rechazado): archivo=val/nb_p20_otro_06_no_verbal_k0.wav pred=salir       conf=0.401 d_gan_med=18.6494 d_gan_min=18.6043 d_media_k=18.6858
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_02_salida_k0.wav pred=salir       conf=1.000 d_gan_med=12.7743 d_gan_min=12.5622 d_media_k=12.7743
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_03_identidad_k0.wav pred=salir       conf=0.804 d_gan_med=13.3931 d_gan_min=13.1741 d_media_k=13.4600
+  'otro' en val (rechazado): archivo=val/nb_p21_otro_04_hola_k0.wav pred=reconocer   conf=0.592 d_gan_med=17.1385 d_gan_min=16.7354 d_media_k=16.9156
+  Comandos bien clasificados con conf>=0.60 en val (57/67): top 5 mayores d_gan_med = [19.2858, 19.633, 20.0028, 20.5795, 22.1582]
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_identificar_04_k0.wav verdad=identificar pred=salir       conf=0.403 d_gan_med=15.5589
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_reconocer_05_k0.wav verdad=reconocer   pred=salir       conf=0.400 d_gan_med=17.6030
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_06_k0.wav     verdad=salir       pred=identificar conf=0.399 d_gan_med=14.9698
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_02_k0.wav verdad=identificar pred=salir       conf=0.611 d_gan_med=14.0522
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_03_k0.wav verdad=identificar pred=salir       conf=0.398 d_gan_med=15.3011
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_04_k0.wav verdad=identificar pred=identificar conf=0.408 d_gan_med=12.4894
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_03_k0.wav verdad=reconocer   pred=reconocer   conf=0.598 d_gan_med=14.7810
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_04_k0.wav verdad=reconocer   pred=reconocer   conf=0.408 d_gan_med=16.3561
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_01_k0.wav     verdad=salir       pred=salir       conf=0.395 d_gan_med=19.1740
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_04_k0.wav     verdad=salir       pred=reconocer   conf=0.606 d_gan_med=15.9298
+  Calibración con d_gan_med: a=13.2372, b=13.3931, τ*=13.3151
+  Matriz de confusión en val (101 clips, orden ['reconocer', 'identificar', 'salir', 'otro']):
+    reconocer   : [0, 0, 0, 23]
+    identificar : [0, 4, 0, 18]
+    salir       : [0, 0, 0, 22]
+    otro        : [0, 0, 1, 33]
+
+>>> Configuración: z_col_sin_dur_zcr, PCA=None, K=5
+  'otro' en val (rechazado): archivo=val/nb_p03_otro_01_conocer_k0.wav pred=identificar conf=0.599 d_gan_med=18.8374 d_gan_min=18.3625 d_media_k=18.8116
+  'otro' en val (PASA_C60 ): archivo=val/nb_p20_otro_02_salida_k0.wav pred=salir       conf=0.800 d_gan_med=17.5064 d_gan_min=17.3005 d_media_k=17.4980
+  'otro' en val (PASA_C60 ): archivo=val/nb_p20_otro_03_identidad_k0.wav pred=identificar conf=0.608 d_gan_med=16.1023 d_gan_min=15.6277 d_media_k=16.3201
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_02_salida_k0.wav pred=salir       conf=1.000 d_gan_med=12.4151 d_gan_min=11.9539 d_media_k=12.4151
+  'otro' en val (PASA_C60 ): archivo=val/nb_p21_otro_03_identidad_k0.wav pred=salir       conf=1.000 d_gan_med=13.2510 d_gan_min=13.0274 d_media_k=13.2510
+  'otro' en val (rechazado): archivo=val/nb_p21_otro_04_hola_k0.wav pred=reconocer   conf=0.593 d_gan_med=16.8469 d_gan_min=16.5107 d_media_k=16.6673
+  Comandos bien clasificados con conf>=0.60 en val (55/67): top 5 mayores d_gan_med = [19.0573, 19.2226, 19.5355, 20.1749, 21.8508]
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_identificar_04_k0.wav verdad=identificar pred=salir       conf=0.405 d_gan_med=15.2058
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_reconocer_05_k0.wav verdad=reconocer   pred=salir       conf=0.402 d_gan_med=16.8271
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p20_salir_06_k0.wav     verdad=salir       pred=otro        conf=0.395 d_gan_med=14.7059
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_02_k0.wav verdad=identificar pred=salir       conf=0.608 d_gan_med=13.9426
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_03_k0.wav verdad=identificar pred=salir       conf=0.399 d_gan_med=15.0241
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_04_k0.wav verdad=identificar pred=identificar conf=0.408 d_gan_med=12.1735
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_identificar_06_k0.wav verdad=identificar pred=identificar conf=0.416 d_gan_med=14.0309
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_03_k0.wav verdad=reconocer   pred=reconocer   conf=0.600 d_gan_med=14.3308
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_reconocer_04_k0.wav verdad=reconocer   pred=reconocer   conf=0.406 d_gan_med=16.1292
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_01_k0.wav     verdad=salir       pred=salir       conf=0.393 d_gan_med=18.8590
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_04_k0.wav     verdad=salir       pred=reconocer   conf=0.604 d_gan_med=15.5662
+  Comando en val que falla con conf>=0.60: archivo=val/nb_p21_salir_05_k0.wav     verdad=salir       pred=salir       conf=0.408 d_gan_med=18.3127
+  Calibración con d_gan_med: a=13.1631, b=13.2510, τ*=13.2070
+  Matriz de confusión en val (101 clips, orden ['reconocer', 'identificar', 'salir', 'otro']):
+    reconocer   : [0, 0, 0, 23]
+    identificar : [0, 4, 0, 18]
+    salir       : [0, 0, 0, 22]
+    otro        : [0, 0, 1, 33]
+
+--- 7. Tiempo del K-NN propio ---
+  Lote de 87 consultas contra 1722 vecinos (d=281): 327.73 ms (3.767 ms/clip)
+  Tiempo total del prototipo: 37.76 s
