@@ -1,0 +1,27 @@
+# Prompt para escribir tests/test_f5.py
+
+Se usa en un chat o ventana aislada, sin el contexto del desarrollo ni acceso al código ni a los prototipos (en VS Code, una ventana con una carpeta que tenga solo `f5_integracion.md` y este archivo, por ejemplo `IA 1\f5_para_tests`), con `f5_integracion.md` adjunto o pegado a continuación.
+
+- **Fecha:** [completar]
+- **Herramienta y modelo:** [completar: herramienta, modelo, si hizo preguntas y qué se le respondió, cantidad de tests y SHA256 del archivo entregado]
+
+```text
+Actuá como un ingeniero de testing en Python. Voy a implementar la Fase 5 (integración) del trabajo final de IA I (Python 3.12, Windows, VS Code): el agente como máquina de estados con la tabla de reglas condición–acción, la percepción de la huella, la captura de voz con un búfer circular y push-to-talk, las huellas que ofrece la app (catálogo y variantes e intrusos nuevos generados en el momento), el visor PCA 2D y un controlador sin Tk que devuelve una Pantalla después de cada evento. La ventana de CustomTkinter se verifica a mano.
+
+Las etapas anteriores (Fase 0 de configuración, H1 a H4 de huellas y V1 a V4 de voz) ya están implementadas y probadas: los tests pueden usar lo que el contrato copia de ellas en su sección 0.3, y nada más.
+
+El contrato completo es el archivo adjunto f5_integracion.md: firmas exactas, definiciones y criterios. Escribí un único archivo, tests/test_f5.py, con pytest, que verifique cada punto de la sección 6 del contrato (la sección 7 es manual: no la automatices).
+
+Reglas:
+1. Leé solo f5_integracion.md. No abras ni leas ningún otro archivo del repositorio ni del entorno (ni src/, ni docs/respaldo/, que tiene los prototipos, ni docs/traspaso/): los tests salen solo del contrato.
+2. No implementes nada de src/ ni propongas cómo hacerlo: tu única entrega es el archivo de tests. El oráculo de la tabla de reglas (sección 4.1), las cuentas del push-to-talk (4.3), la receta de H1 (0.3 y 4.4) y los dobles de prueba (sección 5: preparar, evaluar y reconocer_voz falsos y la fábrica de stream que imita sounddevice.InputStream) se escriben dentro del archivo de test.
+3. Raíz del repo: RAIZ = Path(__file__).resolve().parents[1]. La configuración real se carga con src.config.cargar_config(). Para probar las claves nuevas, escribí copias modificadas de config.yaml en tmp_path; nunca toques el config.yaml del repo.
+4. Importá los módulos de src/ dentro de cada test o de un fixture, nunca arriba del archivo: si algo todavía no existe, que fallen esos tests y no la colección entera. Módulos: src.config, src.agente.agente, src.agente.percepcion, src.agente.captura, src.app.muestras, src.app.visor, src.app.controlador, src.app.ventana, src.app.__main__, src.huellas.generador, src.huellas.variantes, src.huellas.preprocesamiento, src.huellas.caracteristicas, src.huellas.clasificacion, src.core_ml.pca, src.voz.audio y src.voz.clasificacion.
+5. Nada de hardware ni de ventanas: ningún test abre un micrófono real (usá la fábrica falsa) ni crea una ventana de Tk. Los chequeos de "qué importa cada módulo" (secciones 6.6 y 6.10) se hacen en un subproceso de Python (subprocess con sys.executable y cwd=RAIZ) que importa el módulo e imprime si ciertos nombres están en sys.modules.
+6. Bibliotecas permitidas en el test: la biblioteca estándar, pytest, numpy, scipy, opencv (cv2), soundfile, PyYAML y scikit-learn (solo como oráculo: sklearn.decomposition.PCA).
+7. Lo que escriba archivos va en tmp_path o tmp_path_factory (PNG, WAV, metadatos.csv, caracteristicas.npz, registros, carpetas de modelos vacías): nunca escribas en data/, models/ ni docs/ del repo.
+8. Rendimiento: generar una huella base de H1 tarda 1 o 2 s y preprocesar una huella, unos 0,1–0,4 s. Armá las huellas chicas, el modelo hecho a mano y los datasets chicos una sola vez, con fixtures de scope="module", para que el archivo sin aceptación tarde a lo sumo un par de minutos.
+9. Los tests de la sección 6.11 llevan @pytest.mark.aceptacion y se saltean con pytest.skip si falta el archivo real que usan; todos los demás corren con pytest a secas.
+10. Un test por criterio, con nombres descriptivos en español (test_tabla_reglas_completa, test_push_to_talk_ventana_con_tope, etc.), mensajes de error que digan qué falló (valor obtenido y esperado) y parametrize donde ayude (por ejemplo, las 30 celdas de la tabla de 4.1).
+11. Entregá el código completo de tests/test_f5.py listo para guardar y correr. Si algo del contrato es ambiguo o contradictorio, preguntame antes de escribir el archivo.
+```
