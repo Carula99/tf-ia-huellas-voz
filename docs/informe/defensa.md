@@ -26,7 +26,7 @@ Fase 6 del Plan (sección 6.11). Lo escribió Claude Code en la nube el 25/10/20
 | Requisito | Dónde está | Estado |
 |---|---|---|
 | Hitos mostrados en clase y anotados por el JTP | Planilla del JTP | **Pendiente:** H1 a H4, V1 a V4 y la Fase 5 todavía no se mostraron (traspaso, "Pendiente de Santiago") |
-| Los profesores dicen los comandos con su voz | K-NN probado con 4 familiares que nunca grabaron (v01 a v04) | Listo; riesgo en sección 2.4 |
+| Los profesores dicen los comandos con su voz | K-NN probado con 5 familiares que nunca grabaron (v01 a v05; v05 el 26/10 con la app final, 11 de 11 comandos) | Listo; riesgo en sección 2.4 |
 | Semillas y muestras reservadas («mostrame una de la Identidad 1») | Semillas 101, 202 y 303; variantes 39 y 40 de test reservadas; variantes e intrusos nuevos desde 1000 en la app | Listo |
 | Variantes por código, no por prompt de imagen | H1: todas las variantes salen de la base por transformaciones | Listo |
 | Cero fuga de datos | Intrusos de val y de test distintos; voz partida por persona; test mirado una sola vez en H4 y V4; las reservadas no calibran; huellas nuevas desde 1000 | Listo |

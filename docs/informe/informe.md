@@ -273,7 +273,7 @@ Las figuras 4 a 9 son capturas de la aplicación en la notebook, durante la veri
 
 ![Figura 9. Intruso de test (`intruso31_v1`) después de «Reconocer» e «Identificar»: NO AUTORIZADO (1,841 contra τ\* = 1,561) y el aviso de la regla 6, sin ninguna identidad. En el PCA 2D la estrella cae cerca del grupo de la identidad 3: la decisión se toma en las 374 dimensiones.](../figuras/app_6_intruso.png){width=15.5cm}
 
-Tabla 5. Casos probados en la aplicación (verificación manual, 25/10/2026).
+Tabla 5. Casos probados en la aplicación (verificación manual, 25 y 26/10/2026).
 
 | Caso | Qué se hizo | Resultado |
 |---|------|------|
@@ -287,7 +287,8 @@ Tabla 5. Casos probados en la aplicación (verificación manual, 25/10/2026).
 | Pre-roll | «salir» apretando el botón justo al empezar a hablar | Se reconoció |
 | Regla 9 | «Salir» | La aplicación se cerró sin errores |
 | Comandos aceptados | Todos los de la sesión | Confianza 1,00 y distancias de 0,37 a 0,61 contra τ\* = 0,774; ninguno confundido con otro comando |
-| Persona nueva | Una familiar que nunca grabó | Funcionó; cuando soltaba la barra antes de terminar «reconocer», no se tomaba. Con el operador manteniendo el botón mientras ella hablaba, anduvo bien |
+| Persona nueva (25/10) | Una familiar que nunca grabó | Funcionó; cuando soltaba la barra antes de terminar «reconocer», no se tomaba. Con el operador manteniendo el botón mientras ella hablaba, anduvo bien |
+| Persona nueva (26/10) | Otro familiar que nunca grabó: «Reconocer» e «Identificar» sin huella, con una variante nueva de cada identidad (`id1_v1000`, `id2_v1000` e `id3_v1000`) y con un intruso nuevo (`intruso1000_v1`), y «Salir» | 11 de 11 comandos tomados bien: las tres variantes AUTORIZADO con su identidad, el intruso NO AUTORIZADO y sin identidad (regla 6), y «Salir» cerró la aplicación. Confianza de 0,80 a 1,00 y distancias de 0,51 a 0,73 contra τ\* = 0,774 |
 
 # 6. Resultados
 
@@ -390,10 +391,11 @@ Tabla 8. Resultados de la voz. Acierto: comandos aceptados con la etiqueta corre
 | **Test, con τ\*** | 4 | **77,5 % (55 de 71)** | **14,7 % (5 de 34)** |
 | En vivo (24/10), personas nuevas | 3 | 91,2 % (31 de 34) | 3,2 % (1 de 31) |
 | En vivo (24/10), Santiago (en train) | 1 | 18 de 18 | — |
+| En la aplicación (26/10), persona nueva | 1 | 11 de 11 | — (no se probó) |
 
 - **Ningún comando se confundió con otro** en test: lo que el sistema acepta como comando y es un comando, es el correcto. Sin rechazo, el K-NN elige bien 70 de 71 (98,6 %). Los errores son de rechazo: 16 comandos quedan como «no entendí» (6 «reconocer», 7 «identificar» y 3 «salir») y 5 «otro» se aceptan.
 - **Las metas del 90 % y del 5 % no se cumplen en test.** El umbral reparte un compromiso: sin él se acierta el 93 % pero se acepta el 26 % de «otro». Validación y test tienen solo 4 personas cada uno, y el umbral calibrado con las de validación no se trasladó bien a las de test (en validación las palabras duran en promedio 0,94 s y en test 0,76 s).
-- **En vivo** (tabla 8 y sección 5), con el micrófono y la aplicación de la demo, tres familiares que nunca grabaron llegaron al 91,2 % y al 3,2 %; el único «otro» aceptado fue «salida» tomado como «salir». En la verificación de la aplicación, todos los comandos se aceptaron con confianza 1,00.
+- **En vivo** (tabla 8 y sección 5), con el micrófono y la aplicación de la demo, tres familiares que nunca grabaron llegaron al 91,2 % y al 3,2 %; el único «otro» aceptado fue «salida» tomado como «salir». En la verificación de la aplicación, todos los comandos se aceptaron con confianza 1,00. El 26/10, otro familiar que nunca grabó usó la aplicación final y se tomaron bien los 11 comandos que dijo, con confianza de 0,80 a 1,00 (no dijo palabras parecidas a los comandos, así que esa prueba no mide el rechazo).
 
 Lo que cuesta en la práctica un rechazo es repetir el comando; lo que cuesta una aceptación falsa es, en el peor caso, «salida» tomado como «salir», que cierra la aplicación (se vuelve a abrir en segundos). Ninguno de los dos errores puede autorizar una huella ni mostrar una identidad: eso solo lo decide la cadena de huellas.
 
